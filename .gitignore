@@ -1,0 +1,10 @@
+*~
+*.o
+core
+t
+blok
+bak/
+old/
+*.db
+*.ver
+*.tpl

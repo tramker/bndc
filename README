@@ -1,0 +1,29 @@
+Konfiguracni syntaxe
+
+!promena = hodnota [!promena=hodnota]
+!promena = "hodno ta"
+!promena = `echo "ahoj"`
+!promena = "hodnota !var"
+!promena = ""
+ - mezery mimo uvozovky se ignoruji
+ - nove nastavni promene prepise predchozi hodnotu
+ - neexistujici promena vrati null string
+
+!prikaz(parametr)
+ - parametr se vyhodnocuje dle prikazu
+ - opakovane nastaveni znamena opakovane volani
+
+config.tpl se cte na zacatku
+
+Prikazy:
+TTL(1d) - $TTL 1d
+SOA(zone.cz) - zone.cz SOA !nsname !maintname (!version !refresh !retry !expire !negttl)
+NS(ns1.domain.cz., ns2) - vygeneruje NS zaznamy
+MX
+A
+AAAA
+H
+CNAME
+PTR(10, host.domain.com.)
+DOMAIN
+REVERSE
