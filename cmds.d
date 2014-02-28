@@ -15,7 +15,7 @@ static this()
 	"A"     : (string[] args) { var["host"]=args[0]; return args[0]~"\t!rrttl\tA\t"~args[1]; },
 	"AAAA"  : (string[] args) { var["host"]=args[0]; return args[0]~"\t!rrttl\tAAAA\t"~args[1]; },
 	"H"     : (string[] args) { var["host"]=args[0]; return ""; },
-	"CNAME" : (string[] args) => args.map!(a => a~"\t!rrttl\tCNAME\t!host\t").join("\n"),
+	"CNAME" : (string[] args) => args.map!(a => a~"\t!rrttl\tCNAME\t!host").join("\n"),
 	"PTR"   : null,
 	"DOMAIN" : null,
 	"REVERSE": null
