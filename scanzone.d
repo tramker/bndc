@@ -5,7 +5,7 @@ import std.stdio, std.regex;
 import hosts;
 
 auto RE_ORIGIN = regex(r"^\s*\$ORIGIN\s+([a-z0-9.-]+)","i");
-auto RE_HOST = regex(r"^([a-z0-9@.-]*)\s+[0-9dmhsIN\s]*(A|AAAA)\s+([0-9a-f.:]{4,})","i");
+auto RE_HOST = regex(r"^([a-z0-9@*.-]*)\s+[0-9dmhsIN\s]*(A|AAAA)\s+([0-9a-f.:]{4,})","i");
 
 void scanZone(ref Hostdb db, string zone, string zonfil, bool changed=true)
 {
