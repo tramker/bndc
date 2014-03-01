@@ -64,6 +64,7 @@ string genDomain(string[] args)
 		return null;
 
 	var["version"] = genSerial(zone);
+	var["rrttl"] = "";
 
 	string bdy = cast(string) read(tplfil, MAXSIZE);
 	auto pbdy = parser.parse(Element(Element.Type.FILE, bdy)).data;
@@ -114,6 +115,7 @@ string genReverse(string args[])
 		return null;
 
 	var["version"] = genSerial(zone);
+	var["rrttl"] = "";
 
 	string bdy = cast(string) read(tplfil, MAXSIZE);
 	auto pbdy = parser.parse(Element(Element.Type.FILE, bdy)).data;
@@ -129,7 +131,7 @@ string genReverse(string args[])
 
 	foreach (addr4; ipdb)
 	{
-		pbdy ~= format("%s\t\tPTR\t%s\n", addr4.ad.toReverseHost(args[0]), hostdb[addr4.ad].hns[0].hn);
+		pbdy ~= format("%s\t%s\tPTR\t%s\n", addr4.ad.toReverseHost(args[0]), var["rrttl"], hostdb[addr4.ad].hns[0].hn);
 	}
 
 	debug stderr.writeln("DEBUG =========== ", zone, " ===========");
@@ -160,9 +162,9 @@ string cmdPTR(string[] args)
 	{
 		assert(db.front.ad == IPv4(ipaddr));
 		auto oldhosts = db.front.hns;
-		db.front.hns.length++;
-		db.front.hns[0] = new Host(hostname, true);
-		db.front.hns[1..$] = oldhosts;
+		db.front.hns.length = 0;
+		db.front.hns ~= new Host(hostname, true); //concat nutny, jinak overlapping arrays
+		db.front.hns ~= oldhosts;
 	}
 	return null;
 }
@@ -207,13 +209,13 @@ int runReload()
 
 void addToNamedConf(string zone, string[] extras=null)
 {
-	import std.string;
+	import std.string, std.path;
 	string content = "zone \"%s\" in {\n\ttype master;\n\tfile \"%s\";%s\n};\n";
 	string extra;
 	foreach (e; extras)
 		extra ~= "\n\t" ~ e ~ ";";
 
-	namedcontent ~= format(content, zone, var["zonefile"], extra);
+	namedcontent ~= format(content, zone, absolutePath(var["zonefile"]), extra);
 }
 
 void writeNamedConf()
