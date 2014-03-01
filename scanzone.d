@@ -9,7 +9,7 @@ auto RE_HOST = regex(r"^([a-z0-9@*.-]*)\s+[0-9dmhsIN\s]*(A|AAAA)\s+([0-9a-f.:]{4
 
 void scanZone(ref Hostdb db, string zone, string zonfil, bool changed=true)
 {
-	debug stderr.writefln("DEBUG scanzone(%s): %s ", zone, changed);
+	//debug stderr.writefln("DEBUG scanzone(%s): %s ", zone, changed);
 	auto file = File(zonfil);
 	origin = zone ~ ".";
 	lastname = origin.idup;
@@ -87,7 +87,7 @@ knedlik     IN  TXT  "toto  A  1.2.3.4"
 	
 	scanZone(testdb, "testunit.cz", "scanzone_unittest.tmp");
 	remove("scanzone_unittest.tmp");
-	//writeln(testdb);
+	//debug writeln(testdb);
 	assert(testdb.filterHost!"true"().count == 6);
 	assert(testdb.filterIPv4!"true"().count == 7);
 	assert(testdb.filterHost("stroj.testunit.cz.").front.i4s.length == 2);

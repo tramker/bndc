@@ -74,7 +74,7 @@ string genDomain(string[] args)
 	string ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], MAXSIZE);
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
-	debug stderr.writeln("DEBUG =========== ", args[0], " ===========");
+	debug stderr.writeln("DEBUG =========== ", zone, " ===========");
 	debug stderr.writeln("DEBUG genDomain(): writing zone to file ", zonfil);
 	auto zf = File(zonfil, "w");
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
@@ -132,7 +132,7 @@ string genReverse(string args[])
 		pbdy ~= format("%s\t\tPTR\t%s\n", addr4.ad.toReverseHost(args[0]), hostdb[addr4.ad].hns[0].hn);
 	}
 
-	debug stderr.writeln("DEBUG =========== ", args[0], " ===========");
+	debug stderr.writeln("DEBUG =========== ", zone, " ===========");
 	debug stderr.writeln("DEBUG genReverse(): writing zone to file ", zonfil);
 	auto zf = File(zonfil, "w");
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
@@ -146,7 +146,11 @@ string genReverse(string args[])
 /* arg0: ip addr (konec), arg1: hostname (FQDN) */
 string cmdPTR(string[] args)
 {
-	string ipaddr = var["ipnetwork"] ~ "." ~ args[0];
+	string ipaddr;
+	if (var["ipnetwork"].length)
+		ipaddr = var["ipnetwork"] ~ "." ~ args[0];
+	else
+		ipaddr = args[0];
 	string hostname = args[1];
 	debug stderr.writefln("DEBUG cmdPTR: host: %s, ip: %s", hostname, ipaddr);
 	auto db = hostdb.filterIPv4(ipaddr);

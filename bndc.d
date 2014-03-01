@@ -47,7 +47,7 @@ void main(string[] args)
 	auto r = parser.parse(e);
 	
 	if (errcount)
-		stderr.writefln("%d errors encountered, not reloading");
+		stderr.writefln("%d errors encountered, not reloading", errcount);
 	else if (changecount)
 	{
 		writeNamedConf;

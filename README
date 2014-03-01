@@ -29,6 +29,8 @@ Prikazy:
 !AAAA(host6, aa:bb::01)
 !H(some.host.com.)
 !CNAME(nazev)
-!PTR(10, host.domain.com.)
+!PTR(10, host.domain.com.) - prida PTR zaznam do interni databaze (ale do zony
+	nevlozi, ma smysl jen v sablonach reverzni zony)
 !DOMAIN(domena.cz, also-notify {109.123.212.22;})
 !REVERSE(10.20.30)
+
