@@ -17,10 +17,12 @@ void setDefaults()
 	var["negttl"] = "15m";
 	var["nsname"] = "localhost.";
 	var["maintname"] = "root.localhost.";
+	var["rrttl"] = "";
+	var["namedconf"] = "!zone_dir/named-zones.conf";
 	var["cmd_reload"] = "rndc reload";
-	var["cmd_check"] = "/usr/sbin/named-checkzone !zone !file";
+	var["cmd_checkzone"] = "/usr/sbin/named-checkzone -i local !zone !zonefile";
+	var["cmd_checkconf"] = "/usr/sbin/named-checkconf !namedconf";
 }
-
 
 void main(string[] args)
 {
@@ -43,6 +45,15 @@ void main(string[] args)
 	Element e = { Element.Type.FILE };
 	e.data = cast(string) read(filename, MAXSIZE);
 	auto r = parser.parse(e);
+	
+	if (errcount)
+		stderr.writefln("%d errors encountered, not reloading");
+	else if (changecount)
+	{
+		writeNamedConf;
+		if (!runCheckConf)
+			runReload;
+	}
 
-	//stderr.writeln(r);
+	//stdout.write(namedconf);
 }

@@ -15,15 +15,20 @@ Konfiguracni syntaxe
 
 config.tpl se cte na zacatku
 
+System nastavuje:
+!host - posledni hostname z A, AAAA, H prikazu
+!zone - domena
+!zonefile - zonovy soubor
+
 Prikazy:
-TTL(1d) - $TTL 1d
-SOA(zone.cz) - zone.cz SOA !nsname !maintname (!version !refresh !retry !expire !negttl)
-NS(ns1.domain.cz., ns2) - vygeneruje NS zaznamy
-MX
-A
-AAAA
-H
-CNAME
-PTR(10, host.domain.com.)
-DOMAIN
-REVERSE
+!TTL(1d) - $TTL 1d
+!SOA(zone.cz) - zone.cz SOA !nsname !maintname (!version !refresh !retry !expire !negttl)
+!NS(ns1.domain.cz., ns2) - vygeneruje NS zaznamy
+!MX(10 mail.domena.cz.)
+!A(host, 10.20.30.40)
+!AAAA(host6, aa:bb::01)
+!H(some.host.com.)
+!CNAME(nazev)
+!PTR(10, host.domain.com.)
+!DOMAIN(domena.cz, also-notify {109.123.212.22;})
+!REVERSE(10.20.30)

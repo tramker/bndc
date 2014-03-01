@@ -4,6 +4,9 @@ import std.stdio, std.file, std.conv, std.datetime;
 import vars, cmds, hosts, eparser;
 
 EParser parser;
+int errcount;
+int changecount;
+string namedcontent;
 
 /* check if zone template changed */
 bool changed(string zone)
@@ -43,11 +46,18 @@ string genDomain(string[] args)
 		throw new Exception(__FUNCTION__ ~ "(): missing argument - zone name");
 	if (var["zone_suffix"].length < 3)
 		throw new Exception(__FUNCTION__ ~ "(): zone file suffix " ~ var["zone_suffix"] ~" not allowed)");
+
+	string[] extras;
+	if (args.length == 2)
+		extras = args[1..$];
 	string zone = args[0];
 	var.zone = zone; // dulezite pro vars.get|put a jinde
 	scope(exit) var.zone = null;
 	string tplfil = var["template_dir"] ~ "/" ~ zone ~ var["template_suffix"];
 	string zonfil = var["zone_dir"]     ~ "/" ~ zone ~ var["zone_suffix"];
+	var["zonefile"] = zonfil;
+	addToNamedConf(zone, extras);
+
 	bool changed = zone.changed;
 	scope(success) { import scanzone; scanZone(hostdb, zone, zonfil, changed); } //z vysledneho souboru nacte hosty do db
 	if (! changed)
@@ -68,6 +78,9 @@ string genDomain(string[] args)
 	debug stderr.writeln("DEBUG genDomain(): writing zone to file ", zonfil);
 	auto zf = File(zonfil, "w");
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
+	zf.close;
+	if (! runCheckZone())
+		changecount++;
 	
 	return null;
 }
@@ -81,16 +94,22 @@ string genReverse(string args[])
 		throw new Exception(__FUNCTION__ ~ "(): missing argument - ip address");
 	if (var["zone_suffix"].length < 3)
 		throw new Exception(__FUNCTION__ ~ "(): zone file suffix " ~ var["zone_suffix"] ~" not allowed)");
+
+	string[] extras;
+	if (args.length == 2)
+		extras = args[1..$];
 	string zone = IPv4(args[0]).toReverseZone;
 	var.zone = zone; // dulezite pro vars.get|put a jinde
 	scope(exit) var.zone = null;
 	string tplfil = var["template_dir"] ~ "/" ~ zone ~ var["template_suffix"];
 	string zonfil = var["zone_dir"]     ~ "/" ~ zone ~ var["zone_suffix"];
+	var["zonefile"] = zonfil;
 	var["ipnetwork"] = args[0]; // pouziva cmdPTR
 	scope(exit) var.remove("ipnetwork");
+	addToNamedConf(zone, extras);
 
 	auto chdb = hostdb.filterIPv4!(FilterOpt.CHANGED)(args[0]); //db changed only
-	debug stderr.writefln("changed: file: %s, db: %s: ", zone.changed, chdb.count);
+	//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.changed, chdb.count);
 	if (!zone.changed && !chdb.count) // file not changed and db not changed
 		return null;
 
@@ -106,7 +125,7 @@ string genReverse(string args[])
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
 	auto ipdb = hostdb.filterIPv4(args[0]); //db changed & unchanged
-	debug foreach (f; ipdb) stderr.writeln(f);
+	//debug foreach (f; ipdb) stderr.writeln(f);
 
 	foreach (addr4; ipdb)
 	{
@@ -117,6 +136,9 @@ string genReverse(string args[])
 	debug stderr.writeln("DEBUG genReverse(): writing zone to file ", zonfil);
 	auto zf = File(zonfil, "w");
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
+	zf.close;
+	if (! runCheckZone())
+		changecount++;
 
 	return null;
 }
@@ -139,4 +161,67 @@ string cmdPTR(string[] args)
 		db.front.hns[1..$] = oldhosts;
 	}
 	return null;
+}
+
+int runCheckZone()
+{
+	import std.process, std.array;
+	auto cmdline = parser.parse(Element(Element.Type.LINE, var["cmd_checkzone"])).data;
+	auto result = execute(cmdline.split);
+	if (result.status)
+	{
+		stderr.writef("Error checking zone file %s:\n%s", var["zonefile"], result.output);
+		errcount++;
+	} else stdout.writefln("Zone file %s check OK", var["zonefile"]);
+	return result.status;
+}
+
+int runCheckConf()
+{
+	import std.process, std.array;
+	auto cmdline = parser.parse(Element(Element.Type.LINE, var["cmd_checkconf"])).data;
+	auto result = execute(cmdline.split);
+	if (result.status)
+	{
+		stderr.writef("Error checking config file %s:\n%s", var["namedconf"], result.output);
+		errcount++;
+	} else stdout.writefln("Config file %s check OK", var["namedconf"]);
+	return result.status;
+}
+
+int runReload()
+{
+	import std.process, std.array;
+	auto cmdline = parser.parse(Element(Element.Type.LINE, var["cmd_reload"])).data;
+	auto result = execute(cmdline.split);
+	if (result.status)
+	{
+		stderr.writef("Error running reload command '%s':\n%s", var["cmd_reload"], result.output);
+	} else stdout.write("Reload result: ", result.output);
+	return result.status;
+}
+
+void addToNamedConf(string zone, string[] extras=null)
+{
+	import std.string;
+	string content = "zone \"%s\" in {\n\ttype master;\n\tfile \"%s\";%s\n};\n";
+	string extra;
+	foreach (e; extras)
+		extra ~= "\n\t" ~ e ~ ";";
+
+	namedcontent ~= format(content, zone, var["zonefile"], extra);
+}
+
+void writeNamedConf()
+{
+	string namedfil = parser.parse(Element(Element.Type.LINE, var["namedconf"])).data;
+	var["namedconf"] = namedfil; //zpatky ulozime zparsovane
+	
+	if (namedfil.exists && namedfil.isFile)
+		rename(namedfil, namedfil ~ ".bak");
+	if (namedfil.exists && !namedfil.isFile)
+		throw new Exception("file " ~ namedfil ~ " exists, but is not a file");
+	auto file = File(namedfil, "w");
+	file.write(namedcontent);
+	file.close;
 }

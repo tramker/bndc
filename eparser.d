@@ -15,7 +15,7 @@ auto RE_CMT    = regex(r"#.*");
 //auto RE_VARSET = regex(r"(?<!![A-Z_]+\(.*\).*)!(\w+)\s*=\s*([\w!.-]+|`.+`|" ~ `".*")[ \t]*`,"i");
 auto RE_VARSET = regex(r"(?<!!\w+.*)!(\w+)\s*=\s*([\w!.-]+|`.+`|" ~ `".*")[ \t]*`,"i");
 auto RE_VARID  = regex(r"!(\w+)(?![(=])\b");
-auto RE_CMD    = regex(r"!([A-Z_]+)\(([A-Za-z0-9_ .:!,@*-]*)\)"); //pomlcka musi byt na konci
+auto RE_CMD    = regex(r"!([A-Z_]+)\(([A-Za-z0-9_ .:;!,@{}/*-]*)\)"); //pomlcka musi byt na konci
 auto RE_SHELL  = regex(r"`(.+)`", "i");
 auto RE_DQT    = regex(`"(.*)"`);
 
