@@ -23,10 +23,10 @@ public:
 	string opIndex(string id) { return get(id); }
 	void opIndexAssign(string arg, string id) { put(id, arg); }
 	
-	@property void zone(string z) { _zone = z; }
+	void zone(string z) @property { _zone = z; }
 	
     /* vracena hodnota jde zpet do parseru */
-	@property string get(string id)
+	string get(string id) @property
 	{
 		//debug stderr.writefln("DEBUG get(): [%s] %s", _zone, id);
 		if (id == "zone")
@@ -38,7 +38,7 @@ public:
 	}
 
     /* vracena hodnota jde zpet do parseru */
-	@property string put(string id, string arg)
+	string put(string id, string arg) @property
 	{
 		//debug stderr.writefln("DEBUG put(): [%s] %s %s", _zone, id, arg);
 		if (id == "zone")
@@ -50,7 +50,7 @@ public:
 		return null;
 	}
 	
-	@property void remove(string id)
+	void remove(string id) @property
 	{
 		//debug stderr.writefln("DEBUG remove(): [%s] %s %s", _zone, id);
 		if (id == "zone")
