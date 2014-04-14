@@ -1,5 +1,6 @@
-import std.stdio, std.file, std.functional;
+import std.stdio, std.file, std.functional, std.c.stdlib;
 import vars, cmds, eparser, gen;
+static import globals;
 
 void setDefaults()
 {
@@ -24,14 +25,54 @@ void setDefaults()
 	var["cmd_checkconf"] = "/usr/sbin/named-checkconf !namedconf";
 }
 
+void printVer()
+{
+	import core.runtime:Runtime;
+	import std.path:baseName;
+	string myname = baseName(Runtime.args()[0]);
+	string ver = myname ~ " " ~ globals.VERSION ~ "\n\nWritten by Martin Krejčiřík";
+	writeln(ver);
+}
+
+void printHelp()
+{
+	import core.runtime:Runtime;
+	import std.path:baseName;
+	string myname = baseName(Runtime.args()[0]);
+	string help = r"
+Usage: " ~ myname ~ " [OPTION] [ZONE]...
+Generate zone files from templates. Optional ZONE specifies which zones to (re)generate.
+By default all changed zones are generated.
+	
+  --all         process all zones, including unchanged
+  --config      configuration template. Default is config.tpl
+  --no-serial   do not increment zone serial number, just generate zone file
+  --help        display this text and exit
+  --version     output version information and exit
+";
+	writeln(help);
+}
+
 void main(string[] args)
 {
-	string filename;
-	if (args.length > 1)
-		filename = args[1];
-	else
-		filename = "config.tpl";
-		
+	string filename = "config.tpl";
+	if (args.length>1) foreach(arg; args[1..$])
+	{
+		switch (arg)
+		{
+			case "--all": globals.opts["all"] = ""; stderr.writeln("Warning: option --all not implemented"); break;
+			case "--config": filename = null; break;
+			case "--no-serial": globals.opts["noserial"] = ""; stderr.writeln("Warning: option --no-serial not implemented"); break;
+			case "--help": printHelp; exit(EXIT_SUCCESS); break;
+			case "--version": printVer; exit(EXIT_SUCCESS); break;
+			default:
+				if (filename is null)
+					filename = arg;
+				else if (arg[0] != '-')
+					globals.forcedzones ~= arg;
+				else { stderr.writefln("invalid option '%s'", arg); printHelp; exit(EXIT_FAILURE); }
+		}
+	}
 	setDefaults();
 
 	parser = new EParser;
@@ -43,7 +84,7 @@ void main(string[] args)
 	cmd["REVERSE"] = toDelegate(&genReverse);
 	cmd["PTR"] = toDelegate(&cmdPTR);
 	Element e = { Element.Type.FILE };
-	e.data = cast(string) read(filename, MAXSIZE);
+	e.data = cast(string) read(filename, globals.MAXSIZE);
 	auto r = parser.parse(e);
 	
 	if (errcount)

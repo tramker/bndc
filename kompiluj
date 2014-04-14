@@ -1,4 +1,4 @@
-SRC="bndc.d eparser.d vars.d cmds.d hosts.d ipaddr.d scanzone.d gen.d"
+SRC="bndc.d globals.d eparser.d vars.d cmds.d hosts.d ipaddr.d scanzone.d gen.d"
 dmd -g -w -gs -gx -debug -unittest $SRC
 #dmd -g -w -gs -gx $SRC
 #dmd -w -profile $SRC

@@ -2,6 +2,7 @@ module gen;
 
 import std.stdio, std.file, std.conv, std.datetime;
 import vars, cmds, hosts, eparser;
+static import globals;
 
 EParser parser;
 int errcount;
@@ -66,13 +67,13 @@ string genDomain(string[] args)
 	var["version"] = genSerial(zone);
 	var["rrttl"] = "";
 
-	string bdy = cast(string) read(tplfil, MAXSIZE);
+	string bdy = cast(string) read(tplfil, globals.MAXSIZE);
 	auto pbdy = parser.parse(Element(Element.Type.FILE, bdy)).data;
 
-	string hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], MAXSIZE);
+	string hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
 	auto phdr = parser.parse(Element(Element.Type.FILE, hdr)).data;
 
-	string ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], MAXSIZE);
+	string ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
 	debug stderr.writeln("DEBUG =========== ", zone, " ===========");
@@ -117,13 +118,13 @@ string genReverse(string args[])
 	var["version"] = genSerial(zone);
 	var["rrttl"] = "";
 
-	string bdy = cast(string) read(tplfil, MAXSIZE);
+	string bdy = cast(string) read(tplfil, globals.MAXSIZE);
 	auto pbdy = parser.parse(Element(Element.Type.FILE, bdy)).data;
 
-	string hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], MAXSIZE);
+	string hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
 	auto phdr = parser.parse(Element(Element.Type.FILE, hdr)).data;
 
-	string ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], MAXSIZE);
+	string ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
 	auto ipdb = hostdb.filterIPv4(args[0]); //db changed & unchanged

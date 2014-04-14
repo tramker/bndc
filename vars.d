@@ -2,8 +2,6 @@ module vars;
 import std.array;
 debug import std.stdio;
 
-enum MAXSIZE = 1024*1024*100; // max file size to read
-
 Vars var;
 
 static this()
