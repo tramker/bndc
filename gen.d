@@ -35,7 +35,7 @@ string genSerial(string zone)
 		newver = oldver + 1;
 
 	verstr = to!string(newver);
-	std.file.write(verfil, verstr);
+	try { std.file.write(verfil, verstr); } catch (FileException e) { stderr.writeln("Error writing ", e.msg); }
 	return verstr;
 }
 

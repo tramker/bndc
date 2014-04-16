@@ -84,9 +84,11 @@ void main(string[] args)
 	cmd["REVERSE"] = toDelegate(&genReverse);
 	cmd["PTR"] = toDelegate(&cmdPTR);
 	Element e = { Element.Type.FILE };
+	try {
 	e.data = cast(string) read(filename, globals.MAXSIZE);
 	auto r = parser.parse(e);
-	
+	} catch (FileException e) { stderr.writeln("Error accessing file ", e.msg); exit(EXIT_FAILURE); }
+
 	if (errcount)
 		stderr.writefln("%d errors encountered, not reloading", errcount);
 	else if (changecount)
