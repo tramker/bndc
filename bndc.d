@@ -44,11 +44,11 @@ Usage: " ~ myname ~ " [OPTION] [ZONE]...
 Generate zone files from templates. Optional ZONE specifies which zones to (re)generate.
 By default all changed zones are generated.
 	
-  --all         process all zones, including unchanged
-  --config      configuration template. Default is config.tpl
-  --no-serial   do not increment zone serial number, just generate zone file
-  --help        display this text and exit
-  --version     output version information and exit
+  --all          process all zones, including unchanged
+  --config       configuration template. Default is config.tpl
+  --force-serial increment serial number even for unchanged zones
+  --help         display this text and exit
+  --version      output version information and exit
 ";
 	writeln(help);
 }
@@ -62,7 +62,7 @@ void main(string[] args)
 		{
 			case "--all": globals.opts["all"] = ""; stderr.writeln("Warning: option --all not implemented"); break;
 			case "--config": filename = null; break;
-			case "--no-serial": globals.opts["noserial"] = ""; stderr.writeln("Warning: option --no-serial not implemented"); break;
+			case "--force-serial": globals.opts["forceserial"] = ""; stderr.writeln("Warning: option --force-serial not implemented"); break;
 			case "--help": printHelp; exit(EXIT_SUCCESS); break;
 			case "--version": printVer; exit(EXIT_SUCCESS); break;
 			default:
