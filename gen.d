@@ -39,81 +39,52 @@ string genSerial(string zone)
 	return verstr;
 }
 
-/* !DOMAIN(zone.cz) - generate zone file - arg0: zone, argn: parameters */
-string genDomain(string[] args)
-{
-	debug stderr.writeln("DEBUG genDomain(): ", args);
-	if (args.length < 1)
-		throw new Exception(__FUNCTION__ ~ "(): missing argument - zone name");
-	if (var["zone_suffix"].length < 3)
-		throw new Exception(__FUNCTION__ ~ "(): zone file suffix " ~ var["zone_suffix"] ~" not allowed)");
+/* !DOMAIN(zone.cz) a !REVERSE(11.12.13) - generate zone file - arg0: zone, argn: parameters */
+string genZone(string KIND="forward")(string[] args)
+in { static assert(KIND=="forward" || KIND=="reverse"); }
+body {
+	enum Kind:string { FWD="forward", REV="reverse" }
 
-	string[] extras;
-	if (args.length == 2)
-		extras = args[1..$];
-	string zone = args[0];
-	var.zone = zone; // dulezite pro vars.get|put a jinde
-	scope(exit) var.zone = null;
-	string tplfil = var["template_dir"] ~ "/" ~ zone ~ var["template_suffix"];
-	string zonfil = var["zone_dir"]     ~ "/" ~ zone ~ var["zone_suffix"];
-	var["zonefile"] = zonfil;
-	addToNamedConf(zone, extras);
-
-	bool changed = zone.changed;
-	scope(success) { import scanzone; scanZone(hostdb, zone, zonfil, changed); } //z vysledneho souboru nacte hosty do db
-	if (! changed)
-		return null;
-
-	var["version"] = genSerial(zone);
-	var["rrttl"] = "";
-
-	string bdy = cast(string) read(tplfil, globals.MAXSIZE);
-	auto pbdy = parser.parse(Element(Element.Type.FILE, bdy)).data;
-
-	string hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
-	auto phdr = parser.parse(Element(Element.Type.FILE, hdr)).data;
-
-	string ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
-	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
-
-	debug stderr.writeln("DEBUG =========== ", zone, " ===========");
-	debug stderr.writeln("DEBUG genDomain(): writing zone to file ", zonfil);
-	auto zf = File(zonfil, "w");
-	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
-	zf.close;
-	if (! runCheckZone())
-		changecount++;
-	
-	return null;
-}
-
-/* !REVERSE(11.12.13) #hleda 13.12.11.in-addr.arpa.tpl */
-string genReverse(string args[])
-{
 	import std.algorithm, std.string;
-	debug stderr.writeln("DEBUG genReverse(): ", args);
+	debug stderr.writeln("DEBUG genZone(): ", args);
 	if (args.length < 1)
-		throw new Exception(__FUNCTION__ ~ "(): missing argument - ip address");
+	{
+		static if (KIND==Kind.FWD)
+				throw new Exception(__FUNCTION__ ~ "(): missing argument - zone name");
+		else static if (KIND==Kind.REV)
+				throw new Exception(__FUNCTION__ ~ "(): missing argument - ip address");
+	}
 	if (var["zone_suffix"].length < 3)
 		throw new Exception(__FUNCTION__ ~ "(): zone file suffix " ~ var["zone_suffix"] ~" not allowed)");
 
 	string[] extras;
 	if (args.length == 2)
 		extras = args[1..$];
-	string zone = IPv4(args[0]).toReverseZone;
+	static if (KIND==Kind.FWD)		string zone = args[0];
+	else static if (KIND==Kind.REV) string zone = IPv4(args[0]).toReverseZone;
 	var.zone = zone; // dulezite pro vars.get|put a jinde
 	scope(exit) var.zone = null;
 	string tplfil = var["template_dir"] ~ "/" ~ zone ~ var["template_suffix"];
 	string zonfil = var["zone_dir"]     ~ "/" ~ zone ~ var["zone_suffix"];
 	var["zonefile"] = zonfil;
-	var["ipnetwork"] = args[0]; // pouziva cmdPTR
-	scope(exit) var.remove("ipnetwork");
-	addToNamedConf(zone, extras);
-
-	auto chdb = hostdb.filterIPv4!(FilterOpt.CHANGED)(args[0]); //db changed only
-	//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.changed, chdb.count);
-	if (!zone.changed && !chdb.count) // file not changed and db not changed
-		return null;
+	static if (KIND==Kind.FWD)
+	{
+		addToNamedConf(zone, extras);
+		bool changed = zone.changed;
+		scope(success) { import scanzone; scanZone(hostdb, zone, zonfil, changed); } //z vysledneho souboru nacte hosty do db
+		if (! changed)
+			return null;
+	} else
+	static if (KIND==Kind.REV)
+	{
+		var["ipnetwork"] = args[0]; // pouziva cmdPTR
+		scope(exit) var.remove("ipnetwork");
+		addToNamedConf(zone, extras);
+		auto chdb = hostdb.filterIPv4!(FilterOpt.CHANGED)(args[0]); //db changed only
+		//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.changed, chdb.count);
+		if (!zone.changed && !chdb.count) // file not changed and db not changed
+			return null;
+	}
 
 	var["version"] = genSerial(zone);
 	var["rrttl"] = "";
@@ -127,16 +98,19 @@ string genReverse(string args[])
 	string ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
-	auto ipdb = hostdb.filterIPv4(args[0]); //db changed & unchanged
-	//debug foreach (f; ipdb) stderr.writeln(f);
-
-	foreach (addr4; ipdb)
+	static if (KIND==Kind.REV)
 	{
-		pbdy ~= format("%s\t%s\tPTR\t%s\n", addr4.ad.toReverseHost(args[0]), var["rrttl"], hostdb[addr4.ad].hns[0].hn);
+		auto ipdb = hostdb.filterIPv4(args[0]); //db changed & unchanged
+		//debug foreach (f; ipdb) stderr.writeln(f);
+
+		foreach (addr4; ipdb)
+		{
+			pbdy ~= format("%s\t%s\tPTR\t%s\n", addr4.ad.toReverseHost(args[0]), var["rrttl"], hostdb[addr4.ad].hns[0].hn);
+		}
 	}
 
 	debug stderr.writeln("DEBUG =========== ", zone, " ===========");
-	debug stderr.writeln("DEBUG genReverse(): writing zone to file ", zonfil);
+	debug stderr.writeln("DEBUG genZone(): writing zone to file ", zonfil);
 	auto zf = File(zonfil, "w");
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
 	zf.close;

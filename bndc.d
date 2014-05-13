@@ -80,8 +80,8 @@ void main(string[] args)
 	parser.onVar = &var.get;   /* run wher variable is inserted (something !var) */
 	parser.onCmd = &cmd.doCmd; /* run on command ( SOA(zone.cz) ) */
 
-	cmd["DOMAIN"] = toDelegate(&genDomain);
-	cmd["REVERSE"] = toDelegate(&genReverse);
+	cmd["DOMAIN"] = toDelegate(&genZone!"forward");
+	cmd["REVERSE"] = toDelegate(&genZone!"reverse");
 	cmd["PTR"] = toDelegate(&cmdPTR);
 	Element e = { Element.Type.FILE };
 	try {
