@@ -9,6 +9,7 @@ void setDefaults()
 	var["zone_suffix"] = ".db";
 	var["zone_dir"] = ".";
 	var["version_suffix"] = ".ver";
+	var["version_dir"] = ".";
 	var["header"] = "header.tpl";
 	var["footer"] = "footer.tpl";
 	var["ttl"] = "1d";

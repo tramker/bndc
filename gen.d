@@ -13,7 +13,7 @@ string namedcontent;
 bool changed(string zone)
 {
 	string tplfil = var["template_dir"] ~ "/" ~ zone ~ var["template_suffix"];
-	string verfil = var["template_dir"] ~ "/" ~ zone ~ var["version_suffix"];
+	string verfil = var["version_dir"] ~ "/" ~ zone ~ var["version_suffix"];
 
 	return timeLastModified(tplfil) > timeLastModified(verfil, SysTime.min);
 }
@@ -25,7 +25,7 @@ string genSerial(string zone)
 		throw new Exception(__FUNCTION__ ~ "(): missing zone name");
 	if (var["version_suffix"].length < 3)
 		throw new Exception(__FUNCTION__ ~ "(): version file suffix " ~ var["version_suffix"] ~" not allowed)");
-	string verfil = var["template_dir"] ~ "/" ~ zone ~ var["version_suffix"];
+	string verfil = var["version_dir"] ~ "/" ~ zone ~ var["version_suffix"];
 	string verstr = "0"; //required when version file missing
 	uint newver = to!uint(Clock.currTime.toISOString[0..8] ~ "00"); //new version from clock
 	try { verstr = cast(string) std.file.read(verfil, 10); } catch (FileException e) {}
