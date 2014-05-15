@@ -77,8 +77,8 @@ void main(string[] args)
 	setDefaults();
 
 	parser = new EParser;
-	parser.onSet = &var.put;   /* run whe variable is set (!var=somthing) */
-	parser.onVar = &var.get;   /* run wher variable is inserted (something !var) */
+	parser.onSet = &var.put;   /* run when variable is set (!var=somthing) */
+	parser.onVar = &var.get;   /* run when variable is inserted (something !var) */
 	parser.onCmd = &cmd.doCmd; /* run on command ( SOA(zone.cz) ) */
 
 	cmd["DOMAIN"] = toDelegate(&genZone!"forward");
