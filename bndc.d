@@ -2,30 +2,6 @@ import std.stdio, std.file, std.functional, std.c.stdlib;
 import vars, cmds, eparser, gen;
 static import globals;
 
-void setDefaults()
-{
-	var["template_suffix"] = ".tpl";
-	var["template_dir"] = ".";
-	var["zone_suffix"] = ".db";
-	var["zone_dir"] = ".";
-	var["version_suffix"] = ".ver";
-	var["version_dir"] = ".";
-	var["header"] = "header.tpl";
-	var["footer"] = "footer.tpl";
-	var["ttl"] = "1d";
-	var["refresh"] = "4h";
-	var["retry"] = "1h";
-	var["expire"] = "30d";
-	var["negttl"] = "15m";
-	var["nsname"] = "localhost.";
-	var["maintname"] = "root.localhost.";
-	var["rrttl"] = "";
-	var["namedconf"] = "!zone_dir/named-zones.conf";
-	var["cmd_reload"] = "rndc reload";
-	var["cmd_checkzone"] = "/usr/sbin/named-checkzone -i local !zone !zonefile";
-	var["cmd_checkconf"] = "/usr/sbin/named-checkconf !namedconf";
-}
-
 void printVer()
 {
 	import core.runtime:Runtime;
@@ -74,7 +50,6 @@ void main(string[] args)
 				else { stderr.writefln("invalid option '%s'", arg); printHelp; exit(EXIT_FAILURE); }
 		}
 	}
-	setDefaults();
 
 	parser = new EParser;
 	parser.onSet = &var.put;   /* run when variable is set (!var=somthing) */

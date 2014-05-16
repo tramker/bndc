@@ -19,6 +19,8 @@ System nastavuje:
 !host - posledni hostname z A, AAAA, H prikazu
 !zone - domena
 !zonefile - zonovy soubor
+!version - S/N zony
+!rrttl - nastavi prazdne na zacatku zony
 
 Prikazy:
 !TTL(1d) - $TTL 1d

@@ -34,7 +34,9 @@ string genSerial(string zone)
 	if (newver <= oldver)
 		newver = oldver + 1;
 
+	var.priv.old_verstr = verstr;
 	verstr = to!string(newver);
+	var.priv.new_verstr = verstr;
 	try { std.file.write(verfil, verstr); } catch (FileException e) { stderr.writeln("Error writing ", e.msg); }
 	return verstr;
 }
@@ -77,8 +79,8 @@ body {
 	} else
 	static if (KIND==Kind.REV)
 	{
-		var["ipnetwork"] = args[0]; // pouziva cmdPTR
-		scope(exit) var.remove("ipnetwork");
+		var.priv.ipnetwork = args[0]; // pouziva cmdPTR
+		scope(exit) var.priv.ipnetwork = null;
 		addToNamedConf(zone, extras);
 		auto chdb = hostdb.filterIPv4!(FilterOpt.CHANGED)(args[0]); //db changed only
 		//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.changed, chdb.count);
@@ -117,6 +119,7 @@ body {
 	if (! runCheckZone())
 		changecount++;
 
+	var.remove_priv();
 	return null;
 }
 
@@ -124,8 +127,8 @@ body {
 string cmdPTR(string[] args)
 {
 	string ipaddr;
-	if (var["ipnetwork"].length)
-		ipaddr = var["ipnetwork"] ~ "." ~ args[0];
+	if (var.priv.ipnetwork)
+		ipaddr = var.priv.ipnetwork ~ "." ~ args[0];
 	else
 		ipaddr = args[0];
 	string hostname = args[1];

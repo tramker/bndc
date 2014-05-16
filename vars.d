@@ -6,15 +6,37 @@ Vars var;
 
 static this()
 {
-	var["origin"] = "@"; // pouziva NS
+	/* system sets: !host, !zone, !zonefile, !version */
+	var["template_suffix"] = ".tpl";
+	var["template_dir"] = ".";
+	var["zone_suffix"] = ".db";
+	var["zone_dir"] = ".";
+	var["version_suffix"] = ".ver";
+	var["version_dir"] = ".";
+	var["header"] = "header.tpl";
+	var["footer"] = "footer.tpl";
+	var["ttl"] = "1d";
+	var["refresh"] = "4h";
+	var["retry"] = "1h";
+	var["expire"] = "30d";
+	var["negttl"] = "15m";
+	var["nsname"] = "localhost.";
+	var["maintname"] = "root.localhost.";
+	var["rrttl"] = "";   // pouzivaji prikazy !SOA,!NS,!MX,!A,!AAAA,!CNAME
+	var["origin"] = "@"; // pouzivaji prikazy !SOA,!NS,!MX
+	var["namedconf"] = "!zone_dir/named-zones.conf";
+	var["cmd_reload"] = "rndc reload";
+	var["cmd_checkzone"] = "/usr/sbin/named-checkzone -i local !zone !zonefile";
+	var["cmd_checkconf"] = "/usr/sbin/named-checkconf !namedconf";
 }
 
 struct Vars
 {
 private:
-	string[string] _global_vars; /* user-defined vars */
-	string[string][string]  _zone_vars;
-	string _zone;
+	string[string]			_global_vars;  /* global user-defined vars */
+	string[string][string]	_zone_vars;    /* per zone user-defined vars */
+	Private[string]			_private_vars; /* internal typed vars */
+	string					_zone;
 public:
 
 	string opCall(string id) { return get(id); }
@@ -58,4 +80,26 @@ public:
 		else
 			_global_vars.remove(id);
 	}
+
+	ref Private priv() @property
+	{
+		assert(_zone, "_zone is null!");
+		if (_zone !in _private_vars)
+			_private_vars[_zone] = Private.init;
+		return _private_vars[_zone];
+	}
+
+	void remove_priv() @property
+	{
+		assert(_zone, "_zone is null!");
+		_private_vars.remove(_zone);
+	}
+}
+
+/* private vars */
+struct Private
+{
+	string old_verstr;
+	string new_verstr;
+	string ipnetwork;
 }
