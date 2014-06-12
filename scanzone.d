@@ -2,16 +2,16 @@
 /* jednoducha naivni implementace - melo vy se predelat na komplet parser dle RFC 1035 */
 module scanzone;
 import std.stdio, std.regex;
-import hosts;
+import hosts, zones;
 
 auto RE_ORIGIN = regex(r"^\s*\$ORIGIN\s+([a-z0-9.-]+)","i");
 auto RE_HOST = regex(r"^([a-z0-9@*.-]*)\s+[0-9dmhsIN\s]*(A|AAAA)\s+([0-9a-f.:]{4,})","i");
 
-void scanZone(ref Hostdb db, string zone, string zonfil, bool changed=true)
+void scanZone(ref Hostdb db, Zone zone, bool changed=true)
 {
 	//debug stderr.writefln("DEBUG scanzone(%s): %s ", zone, changed);
-	auto file = File(zonfil);
-	origin = zone ~ ".";
+	auto file = File(zone.zonfil);
+	origin = zone.name ~ ".";
 	lastname = origin.idup;
 	foreach (line; file.byLine())
 	{
@@ -81,12 +81,13 @@ jedna		IN	A	11.12.13.1
 knedlik     IN  TXT  "toto  A  1.2.3.4"
 `;
 
-	auto file = File("scanzone_unittest.tmp", "w");
+	auto file = File("scanzone_unittest.tmp.db", "w");
 	file.write(input);
 	file.close;
 	
-	scanZone(testdb, "testunit.cz", "scanzone_unittest.tmp");
-	remove("scanzone_unittest.tmp");
+	scope testzone = new Zone("testunit.cz", "scanzone_unittest.tmp");
+	scanZone(testdb, testzone);
+	remove("scanzone_unittest.tmp.db");
 	//debug writeln(testdb);
 	assert(testdb.filterHost!"true"().count == 6);
 	assert(testdb.filterIPv4!"true"().count == 7);

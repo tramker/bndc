@@ -1,45 +1,13 @@
 module gen;
 
-import std.stdio, std.file, std.conv, std.datetime;
-import vars, cmds, hosts, eparser;
+import std.stdio, std.file, std.conv;
+import vars, cmds, hosts, eparser, zones;
 static import globals;
 
 EParser parser;
 int errcount;
 int changecount;
 string namedcontent;
-
-/* check if zone template changed */
-bool changed(string zone)
-{
-	string tplfil = var["template_dir"] ~ "/" ~ zone ~ var["template_suffix"];
-	string verfil = var["version_dir"] ~ "/" ~ zone ~ var["version_suffix"];
-
-	return timeLastModified(tplfil) > timeLastModified(verfil, SysTime.min);
-}
-
-/* generate and remember zone serial number */
-string genSerial(string zone)
-{
-	if (zone.length < 1)
-		throw new Exception(__FUNCTION__ ~ "(): missing zone name");
-	if (var["version_suffix"].length < 3)
-		throw new Exception(__FUNCTION__ ~ "(): version file suffix " ~ var["version_suffix"] ~" not allowed)");
-	string verfil = var["version_dir"] ~ "/" ~ zone ~ var["version_suffix"];
-	string verstr = "0"; //required when version file missing
-	uint newver = to!uint(Clock.currTime.toISOString[0..8] ~ "00"); //new version from clock
-	try { verstr = cast(string) std.file.read(verfil, 10); } catch (FileException e) {}
-	uint oldver = to!uint(verstr); //old version from file
-
-	if (newver <= oldver)
-		newver = oldver + 1;
-
-	var.priv.old_verstr = verstr;
-	verstr = to!string(newver);
-	var.priv.new_verstr = verstr;
-	try { std.file.write(verfil, verstr); } catch (FileException e) { stderr.writeln("Error writing ", e.msg); }
-	return verstr;
-}
 
 /* !DOMAIN(zone.cz) a !REVERSE(11.12.13) - generate zone file - arg0: zone, argn: parameters */
 string genZone(string KIND="forward")(string[] args)
@@ -62,42 +30,42 @@ body {
 	string[] extras;
 	if (args.length == 2)
 		extras = args[1..$];
-	static if (KIND==Kind.FWD)		string zone = args[0];
-	else static if (KIND==Kind.REV) string zone = IPv4(args[0]).toReverseZone;
-	var.zone = zone; // dulezite pro vars.get|put a jinde
-	scope(exit) var.zone = null;
-	string tplfil = var["template_dir"] ~ "/" ~ zone ~ var["template_suffix"];
-	string zonfil = var["zone_dir"]     ~ "/" ~ zone ~ var["zone_suffix"];
-	var["zonefile"] = zonfil;
+	static if (KIND==Kind.FWD)		string zonestr = args[0];
+	else static if (KIND==Kind.REV) string zonestr = IPv4(args[0]).toReverseZone;
+	scope zone = new Zone(zonestr);
 	static if (KIND==Kind.FWD)
 	{
-		addToNamedConf(zone, extras);
+		addToNamedConf(zone.name, extras);
 		bool changed = zone.changed;
-		scope(success) { import scanzone; scanZone(hostdb, zone, zonfil, changed); } //z vysledneho souboru nacte hosty do db
+		scope(success) { import scanzone; scanZone(hostdb, zone, changed); } //z vysledneho souboru nacte hosty do db
 		if (! changed)
 			return null;
 	} else
 	static if (KIND==Kind.REV)
 	{
-		var.priv.ipnetwork = args[0]; // pouziva cmdPTR
-		scope(exit) var.priv.ipnetwork = null;
-		addToNamedConf(zone, extras);
+		zone.ipnetwork = args[0]; // pouziva cmdPTR
+		scope(exit) zone.ipnetwork = null; //melo by nastat automaticky u scope class
+		addToNamedConf(zone.name, extras);
 		auto chdb = hostdb.filterIPv4!(FilterOpt.CHANGED)(args[0]); //db changed only
 		//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.changed, chdb.count);
 		if (!zone.changed && !chdb.count) // file not changed and db not changed
 			return null;
 	}
 
-	var["version"] = genSerial(zone);
+	var["version"] = zone.genSerial();
 	var["rrttl"] = "";
 
-	string bdy = cast(string) read(tplfil, globals.MAXSIZE);
+	string bdy = cast(string) read(zone.tplfil, globals.MAXSIZE);
 	auto pbdy = parser.parse(Element(Element.Type.FILE, bdy)).data;
 
-	string hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
+	string hdr;
+	if (var["header"].length)
+		hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
 	auto phdr = parser.parse(Element(Element.Type.FILE, hdr)).data;
 
-	string ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
+	string ftr;
+	if (var["footer"].length)
+		ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
 	static if (KIND==Kind.REV)
@@ -111,15 +79,16 @@ body {
 		}
 	}
 
-	debug stderr.writeln("DEBUG =========== ", zone, " ===========");
-	debug stderr.writeln("DEBUG genZone(): writing zone to file ", zonfil);
-	auto zf = File(zonfil, "w");
+	debug stderr.writeln("DEBUG =========== ", zonestr, " ===========");
+	debug stderr.writeln("DEBUG genZone(): writing zone to file ", zone.zonfil);
+	auto zf = File(zone.zonfil, "w");
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
 	zf.close;
-	if (! runCheckZone())
+	if (runCheckZone())
+		zone.revertSerial(); //errors encountered
+	else
 		changecount++;
 
-	var.remove_priv();
 	return null;
 }
 
@@ -127,8 +96,8 @@ body {
 string cmdPTR(string[] args)
 {
 	string ipaddr;
-	if (var.priv.ipnetwork)
-		ipaddr = var.priv.ipnetwork ~ "." ~ args[0];
+	if (currentZone.ipnetwork)
+		ipaddr = currentZone.ipnetwork ~ "." ~ args[0];
 	else
 		ipaddr = args[0];
 	string hostname = args[1];

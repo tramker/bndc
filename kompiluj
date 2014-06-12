@@ -1,6 +1,6 @@
-SRC="bndc.d globals.d eparser.d vars.d cmds.d hosts.d ipaddr.d scanzone.d gen.d"
+SRC="bndc.d globals.d eparser.d vars.d cmds.d hosts.d ipaddr.d scanzone.d gen.d zones.d"
 dmd -g -w -gs -gx -debug -unittest $SRC
 #dmd -g -w -gs -gx $SRC
 #dmd -w -profile $SRC
 #dmd -w -inline -O $SRC
-#depax prog 2>/dev/null
+#depax bndc 2>/dev/null

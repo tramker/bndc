@@ -32,18 +32,18 @@ static this()
 
 struct Vars
 {
-private:
+  private:
 	string[string]			_global_vars;  /* global user-defined vars */
 	string[string][string]	_zone_vars;    /* per zone user-defined vars */
-	Private[string]			_private_vars; /* internal typed vars */
 	string					_zone;
-public:
+  public:
 
 	string opCall(string id) { return get(id); }
 	string opIndex(string id) { return get(id); }
 	void opIndexAssign(string arg, string id) { put(id, arg); }
 	
 	void zone(string z) @property { _zone = z; }
+	string zone() @property { return _zone; }
 	
     /* vracena hodnota jde zpet do parseru */
 	string get(string id) @property
@@ -80,26 +80,4 @@ public:
 		else
 			_global_vars.remove(id);
 	}
-
-	ref Private priv() @property
-	{
-		assert(_zone, "_zone is null!");
-		if (_zone !in _private_vars)
-			_private_vars[_zone] = Private.init;
-		return _private_vars[_zone];
-	}
-
-	void remove_priv() @property
-	{
-		assert(_zone, "_zone is null!");
-		_private_vars.remove(_zone);
-	}
-}
-
-/* private vars */
-struct Private
-{
-	string old_verstr;
-	string new_verstr;
-	string ipnetwork;
 }
