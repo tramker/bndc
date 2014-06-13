@@ -6,7 +6,7 @@ import vars;
 
 Zone currentZone;
 
-scope class Zone
+scope final class Zone
 {
   private:
 	static shared bool[string]	_instantiated; // existuje jiz tato zona ?

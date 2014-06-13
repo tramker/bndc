@@ -4,7 +4,7 @@ import vars;
 public import ipaddr;
 
 //private:
-class Host
+final class Host
 {
 	string  hn; //FQDN
 	bool	changed;
@@ -14,7 +14,7 @@ class Host
 	this(string h, bool ch=true) { hn = h; changed = ch; }
 	override string toString() { return format("%s (%s IPv4, %s IPv6)", hn, i4s.length, i6s.length); }
 }
-class Addr4
+final class Addr4
 {
 	IPv4	ad;
 	bool	changed;
@@ -24,7 +24,7 @@ class Addr4
 	override string toString() { return format("%s (%s hosts)", ad, hns.length); }
 
 }
-class Addr6
+final class Addr6
 {
 	IPv6	ad;
 	bool	changed;
