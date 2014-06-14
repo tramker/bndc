@@ -1,7 +1,7 @@
 module gen;
 
-import std.stdio, std.file, std.conv;
-import vars, cmds, hosts, eparser, zones;
+import std.stdio, std.file;
+import vars, hosts, eparser, zones;
 static import globals;
 
 EParser parser;
@@ -52,7 +52,7 @@ body {
 			return null;
 	}
 
-	var["version"] = zone.genSerial();
+	zone.genSerial();
 	var["rrttl"] = "";
 
 	string bdy = cast(string) read(zone.tplfil, globals.MAXSIZE);
