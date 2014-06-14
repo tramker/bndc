@@ -24,7 +24,7 @@ static this()
 	var["maintname"] = "root.localhost.";
 	var["rrttl"] = "";   // pouzivaji prikazy !SOA,!NS,!MX,!A,!AAAA,!CNAME
 	var["origin"] = "@"; // pouzivaji prikazy !SOA,!NS,!MX
-	var["namedconf"] = "!zone_dir/named-zones.conf";
+	var["namedconf"] = "!zone_dir/bndc-zones.conf";
 	var["cmd_reload"] = "rndc reload";
 	var["cmd_checkzone"] = "/usr/sbin/named-checkzone -i local !zone !zonefile";
 	var["cmd_checkconf"] = "/usr/sbin/named-checkconf !namedconf";

@@ -16,7 +16,7 @@
 !maintname=root.localhost.
 !rrttl=""
 !origin="@"
-!namedconf = "!zone_dir/named-zones.conf"
+!namedconf = "!zone_dir/bndc-zones.conf"
 
 !cmd_reload = "rndc reload"
 !cmd_checkzone = "/usr/sbin/named-checkzone -i local !zone !zonefile"
