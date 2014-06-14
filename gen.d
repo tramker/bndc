@@ -60,12 +60,16 @@ body {
 
 	string hdr;
 	if (var["header"].length)
-		hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
+		try {
+			hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
+		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); errcount++; zone.revertSerial(); return null; }
 	auto phdr = parser.parse(Element(Element.Type.FILE, hdr)).data;
 
 	string ftr;
 	if (var["footer"].length)
-		ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
+		try {
+			ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
+		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); errcount++; zone.revertSerial(); return null; }
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
 	static if (KIND==Kind.REV)
@@ -84,7 +88,8 @@ body {
 	auto zf = File(zone.zonfil, "w");
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
 	zf.close;
-	if (runCheckZone())
+	runCheckZone();
+	if (errcount)
 		zone.revertSerial(); //errors encountered
 	else
 		changecount++;
