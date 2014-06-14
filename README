@@ -1,4 +1,4 @@
-BNDC
+Better Named Domain Configurator
 ================================================================================
 
 If you run your own Bind9 nameserver(s) and you need to keep your forward
@@ -23,32 +23,32 @@ Visit http://www.dlang.org for up to date D compiler.
 
 ===============================================================================
 
-Konfiguracni syntaxe
---------------------
+Konfiguracni syntaxe / Configuration syntax
+-------------------------------------------
 
-!promena = hodnota [!promena=hodnota]
-!promena = "hodno ta"
-!promena = `echo "ahoj"`
-!promena = "hodnota !var"
-!promena = ""
+!variable = value [!var=value]
+!variable = "val ue"
+!variable = `echo "hello"`
+!variable = "value !var"
+!variable = ""
  - mezery mimo uvozovky se ignoruji
  - nove nastavni promene prepise predchozi hodnotu
  - neexistujici promena vrati null string
 
-!prikaz(parametr)
- - parametr se vyhodnocuje dle prikazu
+!command(argument)
+ - argument se vyhodnocuje dle prikazu
  - opakovane nastaveni znamena opakovane volani
 
-config.tpl se cte na zacatku
+config.tpl - se cte na zacatku / first file to read
 
-System nastavuje:
+System nastavuje / Systems sets:
 !host - posledni hostname z A, AAAA, H prikazu
 !zone - domena
 !zonefile - zonovy soubor
 !version - S/N zony
 !rrttl - nastavi prazdne na zacatku zony
 
-Prikazy:
+Prikazy / Commands:
 !TTL(1d) - $TTL 1d
 !SOA(zone.cz) - zone.cz SOA !nsname !maintname (!version !refresh !retry !expire !negttl)
 !NS(ns1.domain.cz., ns2) - vygeneruje NS zaznamy
@@ -79,7 +79,7 @@ nutno mit nastavene pole cmd a take nastavit onSet, onVar a onCmd delegaty.
 
 ipaddr - ip adresa vcetne masky a konverze z/do retezce
 
-hosts - interni databaze hostu a ip adres. Pouziva se hlavne pro generovani
+hosts - interni databaze hostu a ip adres hostdb. Pouziva se hlavne pro generovani
 reverznich zon. Udrzuje seznam pripojenych IP adres k danemu hostname a
 obracene. U kazdeho zaznamu je i polozka changed, oznacujici, jestli se dany
 zaznam zmenil. Do databaze uklada modul scanzone.
@@ -87,3 +87,5 @@ zaznam zmenil. Do databaze uklada modul scanzone.
 scanzone - nacte z vygenerovaneho zonoveho souboru zaznamy do databaze. Je
 to nutne, aby se nacetly i data nezpracovana parserem. Zatim nacita pouze A
 zaznamy.
+
+zones - trida k ukladani pomocnych informaci k zone (nazvy souboru, S/N, apod).
