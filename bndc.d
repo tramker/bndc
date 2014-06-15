@@ -18,8 +18,8 @@ void printHelp()
 	string myname = baseName(Runtime.args()[0]);
 	string help = r"
 Usage: " ~ myname ~ " [OPTION] [ZONE]...
-Generate zone files from templates. Optional ZONE specifies which zones to (re)generate.
-By default all changed zones are generated.
+Generate zone files from templates. Optional ZONE specifies which zones to process
+even if unchanged. By default only changed zones are (re)generated.
 	
   --all          process all zones, including unchanged
   --config       configuration template. Default is config.tpl
@@ -37,9 +37,9 @@ void main(string[] args)
 	{
 		switch (arg)
 		{
-			case "--all": globals.opts["all"] = ""; stderr.writeln("Warning: option --all not implemented"); break;
+			case "--all": globals.opts["all"] = ""; break;
 			case "--config": filename = null; break;
-			case "--force-serial": globals.opts["forceserial"] = ""; stderr.writeln("Warning: option --force-serial not implemented"); break;
+			case "--force-serial": globals.opts["force-serial"] = ""; break;
 			case "--help": printHelp; exit(EXIT_SUCCESS); break;
 			case "--version": printVer; exit(EXIT_SUCCESS); break;
 			default:
@@ -65,9 +65,9 @@ void main(string[] args)
 	auto r = parser.parse(e);
 	} catch (FileException e) { stderr.writeln("Error accessing file ", e.msg); exit(EXIT_FAILURE); }
 
-	if (errcount)
-		stderr.writefln("%d errors encountered, not reloading", errcount);
-	else if (changecount)
+	if (globals.errcount)
+		stderr.writefln("%d errors encountered, not reloading", globals.errcount);
+	else if (globals.changecount)
 	{
 		writeNamedConf;
 		if (!runCheckConf)

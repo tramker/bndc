@@ -7,9 +7,9 @@ import hosts, zones;
 auto RE_ORIGIN = regex(r"^\s*\$ORIGIN\s+([a-z0-9.-]+)","i");
 auto RE_HOST = regex(r"^([a-z0-9@*.-]*)\s+[0-9dmhsIN\s]*(A|AAAA)\s+([0-9a-f.:]{4,})","i");
 
-void scanZone(ref Hostdb db, Zone zone, bool changed=true)
+void scanZone(ref Hostdb db, Zone zone)
 {
-	//debug stderr.writefln("DEBUG scanzone(%s): %s ", zone, changed);
+	//debug stderr.writefln("DEBUG scanzone(%s): %s ", zone.name, zone.changed);
 	auto file = File(zone.zonfil);
 	origin = zone.name ~ ".";
 	lastname = origin.idup;
@@ -19,7 +19,7 @@ void scanZone(ref Hostdb db, Zone zone, bool changed=true)
 			origin = m.captures[1].idup;
 		else
 		if (auto m = matchFirst(line, RE_HOST))
-			addToDB(db, m.captures[1].idup, m.captures[2].idup, m.captures[3].idup, changed);
+			addToDB(db, m.captures[1].idup, m.captures[2].idup, m.captures[3].idup, zone.changed);
 	}
 }
 

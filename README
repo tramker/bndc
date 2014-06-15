@@ -7,16 +7,16 @@ and reverse zones in sync, this tool is for you.
 It's a WIP and English documentation is sparse, but example directory should
 contain working configuration.
 
-What makes this tool different (ie why I wrote it) ?
+What makes this tool different (i.e. why I wrote it) ?
 - templates files (with !var and !CMD tokens) try to closely resemble zone file,
 making migration easy
-- what is not recognized as BNDC token goes to the zone (ie you can put any
+- what is not recognized as BNDC token goes to the zone (so you can put any
 records you wish to your zone file)
 - reverse zones are generated from A records (not limited to a single forward
 zone) and you can customize them with !PTR commands and PTR records and whatever
 other records you wish.
 
-IPV6 is not supported yet, but as mentioned above, you can put AAAA records
+IPv6 is not supported yet, but as mentioned above, you can put AAAA records
 to the zone directly.
 
 Visit http://www.dlang.org for up to date D compiler.
@@ -41,7 +41,7 @@ Konfiguracni syntaxe / Configuration syntax
 
 config.tpl - se cte na zacatku / first file to read
 
-System nastavuje / Systems sets:
+System nastavuje / System sets:
 !host - posledni hostname z A, AAAA, H prikazu
 !zone - domena
 !zonefile - zonovy soubor

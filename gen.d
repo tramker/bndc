@@ -5,8 +5,6 @@ import vars, hosts, eparser, zones;
 static import globals;
 
 EParser parser;
-int errcount;
-int changecount;
 string namedcontent;
 
 /* !DOMAIN(zone.cz) a !REVERSE(11.12.13) - generate zone file - arg0: zone, argn: parameters */
@@ -33,13 +31,21 @@ body {
 	static if (KIND==Kind.FWD)		string zonestr = args[0];
 	else static if (KIND==Kind.REV) string zonestr = IPv4(args[0]).toReverseZone;
 	scope zone = new Zone(zonestr);
+	if ("all" in globals.opts || globals.forcedzones.canFind(zonestr))
+		zone.forced = true;			// force zone processing
 	static if (KIND==Kind.FWD)
 	{
 		addToNamedConf(zone.name, extras);
-		bool changed = zone.changed;
-		scope(success) { import scanzone; scanZone(hostdb, zone, changed); } //z vysledneho souboru nacte hosty do db
-		if (! changed)
-			return null;
+		scope(success) { import scanzone; scanZone(hostdb, zone); } //z vysledneho souboru nacte hosty do db
+		if (zone.tplChanged)
+			zone.incSerial();
+		else
+		{
+			if (!zone.forced) 							// tpl file not changed and zone not forced
+				return null;
+			else if ("force-serial" in globals.opts)
+					zone.incSerial();
+		}
 	} else
 	static if (KIND==Kind.REV)
 	{
@@ -47,12 +53,19 @@ body {
 		scope(exit) zone.ipnetwork = null; //melo by nastat automaticky u scope class
 		addToNamedConf(zone.name, extras);
 		auto chdb = hostdb.filterIPv4!(FilterOpt.CHANGED)(args[0]); //db changed only
-		//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.changed, chdb.count);
-		if (!zone.changed && !chdb.count) // file not changed and db not changed
-			return null;
+		//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.tplChanged, chdb.count);
+
+		if (zone.tplChanged || chdb.count)				// tpl or db changed
+			zone.incSerial();
+		else
+		{
+			if (!zone.forced)							// not changed and not forced
+				return null;
+			else if ("force-serial" in globals.opts)	// not changed and forced
+					zone.incSerial();
+		}
 	}
 
-	zone.genSerial();
 	var["rrttl"] = "";
 
 	string bdy = cast(string) read(zone.tplfil, globals.MAXSIZE);
@@ -62,14 +75,14 @@ body {
 	if (var["header"].length)
 		try {
 			hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
-		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); errcount++; zone.revertSerial(); return null; }
+		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); globals.errcount++; zone.revertVer(); return null; }
 	auto phdr = parser.parse(Element(Element.Type.FILE, hdr)).data;
 
 	string ftr;
 	if (var["footer"].length)
 		try {
 			ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
-		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); errcount++; zone.revertSerial(); return null; }
+		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); globals.errcount++; zone.revertVer(); return null; }
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
 	static if (KIND==Kind.REV)
@@ -89,10 +102,10 @@ body {
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
 	zf.close;
 	runCheckZone();
-	if (errcount)
-		zone.revertSerial(); //errors encountered
+	if (globals.errcount)
+		zone.revertVer(); //errors encountered, revert ver file modify time to force rebuild next time
 	else
-		changecount++;
+		globals.changecount++;
 
 	return null;
 }
@@ -129,7 +142,7 @@ int runCheckZone()
 	if (result.status)
 	{
 		stderr.writef("Error checking zone file %s:\n%s", var["zonefile"], result.output);
-		errcount++;
+		globals.errcount++;
 	} else stdout.writefln("Zone file %s check OK", var["zonefile"]);
 	return result.status;
 }
@@ -142,7 +155,7 @@ int runCheckConf()
 	if (result.status)
 	{
 		stderr.writef("Error checking config file %s:\n%s", var["namedconf"], result.output);
-		errcount++;
+		globals.errcount++;
 	} else stdout.writefln("Config file %s check OK", var["namedconf"]);
 	return result.status;
 }
