@@ -138,6 +138,8 @@ int runCheckZone()
 {
 	import std.process, std.array;
 	auto cmdline = parser.parse(Element(Element.Type.LINE, var["cmd_checkzone"])).data;
+	if (!cmdline.length)
+		return 0;
 	auto result = execute(cmdline.split);
 	if (result.status)
 	{
@@ -151,6 +153,8 @@ int runCheckConf()
 {
 	import std.process, std.array;
 	auto cmdline = parser.parse(Element(Element.Type.LINE, var["cmd_checkconf"])).data;
+	if (!cmdline.length)
+		return 0;
 	auto result = execute(cmdline.split);
 	if (result.status)
 	{
@@ -164,6 +168,8 @@ int runReload()
 {
 	import std.process, std.array;
 	auto cmdline = parser.parse(Element(Element.Type.LINE, var["cmd_reload"])).data;
+	if (!cmdline.length)
+		return 0;
 	auto result = execute(cmdline.split);
 	if (result.status)
 	{
