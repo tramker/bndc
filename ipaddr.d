@@ -49,7 +49,9 @@ struct IPv4
 
 	string toString(bool mask=false) { return toString(this, mask); }
 	
-	bool isin(IPv4 rhs) { return ((addr&rhs.mask) == (rhs.addr&rhs.mask)); }
+	bool isin(IPv4 rhs) { return ((addr & rhs.mask) == (rhs.addr & rhs.mask)); }
+	uint netPart() { return addr & mask; }
+	uint hstPart() { return addr & !mask; }
 	
 	/* obraceny string (domena) pro pouziti v reverznich zonach */
 	string toReverseZone()
@@ -75,20 +77,31 @@ struct IPv4
 		//return format("%d.%d.%d.in-addr.arpa", addr<<16>>24, addr<<8>>24, addr>>24);
 	}
 
-	/* obraceny string (jen host IP) pro pouziti v reverznich zonach */
+	/* obraceny string IP adresy pro pouziti v reverznich zonach
+	   net mask 24-32 -> d
+	   net mask 16-23 -> d.c
+	   net mask  8-15 -> d.c.b
+	   net mask  0-7  -> d.c.b.a
+	*/
 	string toReverseHost(string net)
 	{
 		import std.array: join;
-		auto had = addr ^ fromString(net).addr; // addr xor net = host addr
+		import zones: currentZone;
+		IPv4 network = fromString(net);
+		version(assert) if (! isin(network))
+			stderr.writefln("Warning%s: host %s not inside network %s",
+				currentZone is null ? null : " zone " ~ currentZone.name, this.toString(true), network.toString(true));
+
+		uint netbits = network.mask.bitcount;
 		string[] ret; ret.reserve(3);
-		for(uint a=had,sh=0; sh<=32; sh+=8)
+		for(int sh=24; sh>=0; sh-=8)
 		{
-			a = had<<sh>>24;
-			if (a)
-				ret ~= to!string(a);
+			ret ~= to!string( addr<<sh>>24 );
+			if (sh <= netbits)
+				break;
 		}
-		//debug stderr.writeln("RET: ", join(ret.reverse, "."));
-		return join(ret.reverse, ".");
+		//debug stderr.writeln("RET: ", join(ret, "."));
+		return join(ret, ".");
 	}
 }
 
@@ -113,4 +126,8 @@ unittest
 	static assert(IPv4.fromString("172.16.10").mask.bitcount == 24);
 	static assert(IPv4.fromString("172.16").mask.bitcount == 16);
 	static assert(IPv4.fromString("10").mask.bitcount == 8);
+	assert(ip1.toReverseHost("192.168.0") == "1");
+	assert(ip1.toReverseHost("192.168.0.0/16") == "1.0");
+	assert(ip1.toReverseHost("192.168.255.255/15") == "1.0.168");
+	assert(ip1.toReverseHost("192.168.255.255/7") == "1.0.168.192");
 }
