@@ -1,91 +1,120 @@
-Better Named Domain Configurator
+BNDC - DNS zone file generator
 ================================================================================
 
-If you run your own Bind9 nameserver(s) and you need to keep your forward
-and reverse zones in sync, this tool is for you.
+If you run your own Bind nameserver(s) and you need to keep your forward
+and reverse zones synchronized, this tool is for you.
 
 It's a WIP and English documentation is sparse, but example directory should
-contain working configuration.
+contain working configuration. Basically it uses template files (.tpl
+extension by default) as a source of data and it generates corresponding zone
+files (.db extension by default).
 
 What makes this tool different (i.e. why I wrote it) ?
-- templates files (with !var and !CMD tokens) try to closely resemble zone file,
-making migration easy
-- what is not recognized as BNDC token goes to the zone (so you can put any
-records you wish to your zone file)
+
+- templates files try to closely resemble zone files, making migration easy. 
+You can even put ordinary Bind records into a template and they will carry
+into generated zone file without change.
+
 - reverse zones are generated from A records (not limited to a single forward
 zone) and you can customize them with !PTR commands and PTR records and whatever
-other records you wish.
+other records you wish. This is handy for IP's with multiple hostnames.
+
+- you can use user defined variables to insert arbitrary data into your
+zones.
 
 IPv6 is not supported yet, but as mentioned above, you can put AAAA records
 to the zone directly.
 
-Visit http://www.dlang.org for up to date D compiler.
-
 ===============================================================================
 
-Konfiguracni syntaxe / Configuration syntax
--------------------------------------------
+Compiling
+---------
+
+Visit http://www.dlang.org for up to date D compiler. DMD is recommended for
+latest Dlang features. Other D compilers are GDC (gcc backend) and LDC (LLVM
+backend).
+
+Run 'kompiluj' script to compile bndc (it's too simple, I know).
+
+You can also use binary release, available on github, if you don't want to
+mess with D compiler.
+
+Installing
+----------
+
+Copy bndc into /usr/local/bin or any other path of your choice.
+
+Using BNDC
+----------
+
+Have a look into example directory. BNDC uses template files which are
+basically ordinary zone files with special tokens. All tokens start with
+exclamation mark '!' and there are two kinds of them: variables ( !var or
+!var=value ) and commands ( !COMMAND(argument) ). Some variables are used by
+BNDC, some are set by BNDC and all of them can be set and used by the user (in
+any template file).
+
+If you run bndc from example directory, first it's going to 
+read file config.tpl (you can change this with --config option).
+It will set various variables and then begin executing commands.
+
+Each domain requires it's own template. They are stored in the template
+directory. There is also a header and footer template which are included at
+the top and bottom of each processed template.
+
+Generated zone files are stored in the zone directory, together with index
+(bndc-zones.conf by default) which you can $include into your named.conf.
+
+After a zone file is generated, bndc executes shell command stored in
+!cmd_checkzone variable. Similarly, at the end !cmd_checkconf command is
+executed.
+
+If there are no errors (0 return value), !cmd_reload is executed.
+
+Configuration syntax
+--------------------
 
 !variable = value [!var=value]
 !variable = "val ue"
 !variable = `echo "hello"`
 !variable = "value !var"
 !variable = ""
- - mezery mimo uvozovky se ignoruji
- - nove nastavni promene prepise predchozi hodnotu
- - neexistujici promena vrati null string
+ - whitespace outside quotes is ignored
+ - new value overwrites previous value
+ - nonexistent variable evaluates to empty string
 
 !command(argument)
- - argument se vyhodnocuje dle prikazu
- - opakovane nastaveni znamena opakovane volani
+ - argument is specific to each command
+ - repeated command means repeated call
 
-config.tpl - se cte na zacatku / first file to read
+config.tpl - default first template to read
 
-System nastavuje / System sets:
-!host - posledni hostname z A, AAAA, H prikazu
-!zone - domena
-!zonefile - zonovy soubor
-!version - S/N zony
-!rrttl - nastavi prazdne na zacatku zony
+BNDC sets following variables:
+!host - last hostname from !A, !AAAA, !H commands
+!zone - currently processed zone (domain)
+!zonefile - generated zone file
+!version - zone serial number (SOA)
+!rrttl - resource record TTL, empty at the start of each zone.
 
-Prikazy / Commands:
-!TTL(1d) - $TTL 1d
-!SOA(zone.cz) - zone.cz SOA !nsname !maintname (!version !refresh !retry !expire !negttl)
-!NS(ns1.domain.cz., ns2) - vygeneruje NS zaznamy
-!MX(10 mail.domena.cz.)
-!A(host, 10.20.30.40)
-!AAAA(host6, aa:bb::01)
-!H(some.host.com.)
-!CNAME(nazev)
-!PTR(10, host.domain.com.) - prida PTR zaznam do interni databaze (ale do zony
-	nevlozi, ma smysl jen v sablonach reverzni zony)
-!DOMAIN(domena.cz, also-notify {109.123.212.22;})
-!REVERSE(10.20.30)
+for other variables used by BNDC, see example/default_config.tpl
 
+Commands:
+!TTL(1d)                 - $TTL 1d
+!SOA(domain.cz)          - domain.cz SOA: !nsname !maintname (!version !refresh !retry !expire !negttl)
+!NS(ns1.isp.net., ns2)   - NS records (beware trailing dot!)
+!MX(10 mail.domain.cz.)  - MX records (beware trailing dot!)
+!A(host, 10.20.30.40)    - A record
+!AAAA(host6, aa:bb::01)  - AAAA record - NOT IMPLEMENTED
+!H(some.host.com.)       - dummy host for !CNAME etc
+!CNAME(myname)           - CNAME to previous host (uses !host variable)
+!PTR(10, some.host.com.) - override PTR in internal database (PTR record is
+                           generated as ordinary from the database). Intended
+                           for reverse zone templates.
+!DOMAIN(domain.cz)       - generate forward zone
+!DOMAIN(domain.cz, also-notify {109.123.212.22;}) - forward zone with optional options
+!REVERSE(10.20.30)       - generate reverse zone 30.20.10.in-addr.arpa
+!REVERSE(10.20.0.0/16)   - generate reverse zone 20.10.in-addr.arpa
 
-
-Poznamky k modulum programu
----------------------------
-
-vars - gloablni asociativni pole var, kde klic je nazev promenne (!var) z
-sablon. Promenne se ukladaji samostatne pro kazdou zonu. Neexistujici
-promenna vrati prazdny retezec.
-
-cmds - globalni asociativni pole cmd, kde klic je nezev prikazu a hodnota je
-callback delegat, ktery se vola z parseru.
-
-eparser - parser, vstup a vystup pomoci struktury Element. Pred pouzitim
-nutno mit nastavene pole cmd a take nastavit onSet, onVar a onCmd delegaty.
-
-ipaddr - ip adresa vcetne masky a konverze z/do retezce
-
-hosts - interni databaze hostu a ip adres hostdb. Pouziva se hlavne pro generovani
-reverznich zon. Udrzuje seznam pripojenych IP adres k danemu hostname a
-obracene. U kazdeho zaznamu je i polozka changed, oznacujici, jestli se dany
-zaznam zmenil. Do databaze uklada modul scanzone.
-
-scanzone - nacte z vygenerovaneho zonoveho souboru zaznamy do databaze. Je
-to nutne, aby se nacetly i data nezpracovana parserem. Zatim nacita pouze A
-zaznamy.
-
-zones - trida k ukladani pomocnych informaci k zone (nazvy souboru, S/N, apod).
+Contact
+-------
+Martin Krejcirik <mk@krej.cz>

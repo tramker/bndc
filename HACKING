@@ -1,0 +1,25 @@
+Poznamky k modulum programu
+---------------------------
+
+vars - gloablni asociativni pole var, kde klic je nazev promenne (!var) z
+sablon. Promenne se ukladaji samostatne pro kazdou zonu. Neexistujici
+promenna vrati prazdny retezec.
+
+cmds - globalni asociativni pole cmd, kde klic je nezev prikazu a hodnota je
+callback delegat, ktery se vola z parseru.
+
+eparser - parser, vstup a vystup pomoci struktury Element. Pred pouzitim
+nutno mit nastavene pole cmd a take nastavit onSet, onVar a onCmd delegaty.
+
+ipaddr - ip adresa vcetne masky a konverze z/do retezce
+
+hosts - interni databaze hostu a ip adres hostdb. Pouziva se hlavne pro generovani
+reverznich zon. Udrzuje seznam pripojenych IP adres k danemu hostname a
+obracene. U kazdeho zaznamu je i polozka changed, oznacujici, jestli se dany
+zaznam zmenil. Do databaze uklada modul scanzone.
+
+scanzone - nacte z vygenerovaneho zonoveho souboru zaznamy do databaze. Je
+to nutne, aby se nacetly i data nezpracovana parserem. Zatim nacita pouze A
+zaznamy.
+
+zones - trida k ukladani pomocnych informaci k zone (nazvy souboru, S/N, apod).
