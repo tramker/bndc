@@ -65,7 +65,7 @@ struct IPv4
 			if (a)
 			{
 				string num = to!string(a) ~ ".";
-				uint end = ret.length - pos;
+				auto end = ret.length - pos;
 				pos += num.length;
 				//debug stderr.writefln("BOUNDS: %d .. %d, %d", ret.length-pos, end, num.length);
 				ret[$-pos..end] = num;
