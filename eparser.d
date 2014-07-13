@@ -44,7 +44,7 @@ class EParser
  	final void replaceVars(ref string data)
 	{
 		foreach(m; matchAll(data, RE_VARID))
-			data = data.replaceFirst(m.hit, onVar(m.captures[1]));
+			data = data.replaceFirst(m.hit, onVar(m[1]));
 	}
  public:
  /* vraci typ ERR pri chybe a nezpracovana data */
@@ -99,7 +99,7 @@ class EParser
 			if (auto m = matchFirst(data, RE_VARSET))
 			{
 				//debug stderr.writeln("DEBUG RE_VARSET: ", m.hit);
-				auto varName = m.captures[1]; auto varArg = m.captures[2];
+				auto varName = m[1]; auto varArg = m[2];
 				nextE = Element(Element.Type.VAR, varArg);
 				//replaceVars(nextE.data); //vyhodnoti promene v hodnote (nechceme)
 				auto r = parse(nextE);
@@ -110,7 +110,7 @@ class EParser
 			if (auto m = matchFirst(data, RE_CMD))
 			{
 				//debug stderr.writeln("DEBUG RE_CMD: ", m.hit);
-				auto cmdName = m.captures[1]; auto cmdArg = m.captures[2];
+				auto cmdName = m[1]; auto cmdArg = m[2];
 				replaceVars(cmdArg); //vyhodnoti promene v argumentu
 				/* nepouzito
 				nextE = Element(Element.Type.CMD, cmdArg);
@@ -133,7 +133,7 @@ class EParser
 			ret.type = Element.Type.VAR;
 			if (auto m = matchFirst(data, RE_SHELL))
 			{
-				auto sh = executeShell(m.captures[1]);
+				auto sh = executeShell(m[1]);
 				if (sh.status) //return value
 					ret.err = true;
 				else if (sh.output)
@@ -141,7 +141,7 @@ class EParser
 			} else
 			if (auto m = matchFirst(data, RE_DQT))
 			{
-				ret.data = m.captures[1];
+				ret.data = m[1];
 			} else { ret.data = data; }
 			data.length = 0;
 		} else

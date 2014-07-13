@@ -16,10 +16,10 @@ void scanZone(ref Hostdb db, Zone zone)
 	foreach (line; file.byLine())
 	{
 		if (auto m = matchFirst(line, RE_ORIGIN))
-			origin = m.captures[1].idup;
+			origin = m[1].idup;
 		else
 		if (auto m = matchFirst(line, RE_HOST))
-			addToDB(db, m.captures[1].idup, m.captures[2].idup, m.captures[3].idup, zone.changed);
+			addToDB(db, m[1].idup, m[2].idup, m[3].idup, zone.changed);
 	}
 }
 
