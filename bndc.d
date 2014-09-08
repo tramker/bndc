@@ -59,10 +59,11 @@ void main(string[] args)
 	cmd["DOMAIN"] = toDelegate(&genZone!"forward");
 	cmd["REVERSE"] = toDelegate(&genZone!"reverse");
 	cmd["PTR"] = toDelegate(&cmdPTR);
-	Element e = { Element.Type.FILE };
+	Element e,r;
 	try {
-	e.data = cast(string) read(filename, globals.MAXSIZE);
-	auto r = parser.parse(e);
+		e.type = Element.Type.FILE;
+		e.data = cast(string) read(filename, globals.MAXSIZE);
+		r = parser.parse(e);
 	} catch (FileException e) { stderr.writeln("Error accessing file ", e.msg); exit(EXIT_FAILURE); }
 
 	if (globals.errcount)
@@ -75,4 +76,9 @@ void main(string[] args)
 	}
 
 	//stdout.write(namedconf);
+	/* Varovani, pokud po zparsovani konfigu zbyly neprazdne radky */
+	import std.string, std.algorithm;
+	auto cfgOutput = r.data.splitLines.filter!(a => (stripLeft(a).length>0));
+	if (cfgOutput.count) //pocet vracenych radku
+		stderr.writefln("Warning: unrecognized config file (%s) elements:\n%s", filename, cfgOutput.join("\n"));
 }

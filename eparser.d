@@ -18,6 +18,7 @@ auto RE_VARID  = regex(r"!(\w+)(?![(=])\b");
 auto RE_CMD    = regex(r"!([A-Z_]+)\(([A-Za-z0-9_ .:;!,@{}/*-]*)\)"); //pomlcka musi byt na konci
 auto RE_SHELL  = regex(r"`(.+)`", "i");
 auto RE_DQT    = regex(`"(.*)"`);
+auto RE_WSLN   = regex(r"^\s+$");
 
 //split argument parameters
 string[] splitArg(string arg)
@@ -52,6 +53,7 @@ class EParser
  {
 	Element ret;   //zbyla data po odstraneni zparsovanych hodnot
 	Element nextE; //dalsi data pro rekurznivni parsovani
+	bool lineChanged = false; // zmenil se radek ? (pro mazani prazdnych radku)
 
 	if (e.data.length >= uint.max)
 		throw new Exception("Element " ~ to!string(e.data[0..64]) ~ "... too large");
@@ -92,24 +94,28 @@ class EParser
 			if (auto m = matchFirst(data, RE_CMT))
 			{
 				//debug stderr.writeln("DEBUG RE_CMT: ", m.hit);
+				lineChanged = true;
 				data = data[0..m.pre.length] ~ m.post; //post je \n
-				if (ret.data == "\n" || ret.data == "\r\n" || ret.data == "\r") /* smazani prazdnych radku */
-					ret.data = null;
+				/* smazani prazdnych radku (nadbytecne, pouze optimalizace) */
+				if (data == "\n" || data == "\r\n" || data == "\r")
+					data = null;
 			} else
 			if (auto m = matchFirst(data, RE_VARSET))
 			{
 				//debug stderr.writeln("DEBUG RE_VARSET: ", m.hit);
+				lineChanged = true;
 				auto varName = m[1]; auto varArg = m[2];
 				nextE = Element(Element.Type.VAR, varArg);
 				//replaceVars(nextE.data); //vyhodnoti promene v hodnote (nechceme)
 				auto r = parse(nextE);
 				string rdata = onSet(varName, r.data);
-				ret.data = ret.data ~ m.pre ~ rdata;/* m.post se zpracuje v dalsim kole */
+				ret.data = ret.data ~ m.pre ~ rdata; /* m.post se zpracuje v dalsim kole */
 				data = data[m.pre.length+m.hit.length..$];
 			} else
 			if (auto m = matchFirst(data, RE_CMD))
 			{
 				//debug stderr.writeln("DEBUG RE_CMD: ", m.hit);
+				lineChanged = true;
 				auto cmdName = m[1]; auto cmdArg = m[2];
 				replaceVars(cmdArg); //vyhodnoti promene v argumentu
 				/* nepouzito
@@ -122,7 +128,10 @@ class EParser
 			{
 				ret.data ~= data;
 				data.length = 0;
-				if (ret.data == "\n" || ret.data == "\r\n" || ret.data == "\r")
+				/* smazani radku, ktere obsahuji jen mezery (pokud ze zmenily) */
+				if (lineChanged)
+					ret.data = replaceFirst(ret.data, RE_WSLN, "");
+				if (! ret.data.length) // zbytecne
 					ret.data = null;
 			}
 			replaceVars(ret.data); //vlozeni promenych do vysledku - zpracovava opakovane cely radek
