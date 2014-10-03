@@ -1,7 +1,6 @@
 module cmds;
-import std.string, std.algorithm, std.range, std.array;
+import std.stdio, std.string, std.algorithm, std.range, std.array;
 import vars, hosts;
-debug import std.stdio;
 
 Cmds cmd;
 
@@ -34,7 +33,14 @@ struct Cmds
 		debug stderr.writefln("DEBUG doCmd(%d): %s %s", args.length, id, args);
 		if (id in _cmd && _cmd[id] !is null)
 			return  _cmd[id](args);
-		else return "__" ~ id ~ "__";
+		else
+		{
+			import zones; static import globals;
+			globals.errcount++;
+			if (currentZone !is null) // nejsme v config template
+				stderr.writefln("Error in template %s: unknown command %s", currentZone.tplfil, id);
+			return "; bndc error: unknown command " ~ id;
+		}
 	}
 	
 	auto opIndex(string id)
