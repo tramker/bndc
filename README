@@ -4,16 +4,16 @@ BNDC - DNS zone file generator
 If you run your own Bind nameserver(s) and you need to keep your forward
 and reverse zones synchronized, this tool is for you.
 
-It's a WIP and English documentation is sparse, but example directory should
+It's a WIP and English documentation is sparse, but the example directory should
 contain working configuration. Basically it uses template files (.tpl
-extension by default) as a source of data and it generates corresponding zone
-files (.db extension by default).
+extension by default) as a source of zone data and it generates corresponding
+zone files (.db extension by default).
 
 What makes this tool different (i.e. why I wrote it) ?
 
 - templates files try to closely resemble zone files, making migration easy. 
 You can even put ordinary Bind records into a template and they will carry
-into generated zone file without change.
+into the generated zone file without change.
 
 - reverse zones are generated from A records (not limited to a single forward
 zone) and you can customize them with !PTR commands and PTR records and whatever
@@ -42,24 +42,28 @@ mess with D compiler.
 Installing
 ----------
 
-Copy bndc into /usr/local/bin or any other path of your choice.
+Copy bndc binary to /usr/local/bin or any other path of your choice.
+
+Create directory for bndc data (you can use /etc/bind or similar). Create
+config.tpl and your zone templates (see the example directory).
 
 Using BNDC
 ----------
 
-Have a look into example directory. BNDC uses template files which are
+Have a look into the example directory. BNDC uses template files which are
 basically ordinary zone files with special tokens. All tokens start with
 exclamation mark '!' and there are two kinds of them: variables ( !var or
 !var=value ) and commands ( !COMMAND(argument) ). Some variables are used by
 BNDC, some are set by BNDC and all of them can be set and used by the user (in
 any template file).
 
-If you run bndc from example directory, first it's going to 
-read file config.tpl (you can change this with --config option).
-It will set various variables and then begin executing commands.
+If you run bndc from the example directory, first it's going to read the
+file config.tpl (you can change this with --config option).  It process the
+file sequentialy, first setting various variables and then executing
+commands (!DOMAIN and !REVERSE).
 
 Each domain requires it's own template. They are stored in the template
-directory. There is also a header and footer template which are included at
+directory. There can also be a header and footer template which are included at
 the top and bottom of each processed template.
 
 Generated zone files are stored in the zone directory, together with index
