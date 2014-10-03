@@ -7,6 +7,7 @@
 !template_dir=template
 !zone_dir=zone
 !version_dir=zone
+!header=header.tpl
 !ttl=1d
 !refresh=4h
 !retry=1h

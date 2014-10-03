@@ -5,8 +5,8 @@
 !zone_dir=.
 !version_suffix=.ver
 !version_dir=.
-!header=header.tpl
-!footer=footer.tpl
+!header=""
+!footer=""
 !ttl=1d
 !refresh=4h
 !retry=1h

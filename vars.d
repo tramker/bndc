@@ -13,8 +13,8 @@ static this()
 	var["zone_dir"] = ".";
 	var["version_suffix"] = ".ver";
 	var["version_dir"] = ".";
-	var["header"] = "header.tpl";
-	var["footer"] = "footer.tpl";
+	//var["header"] = "header.tpl";
+	//var["footer"] = "footer.tpl";
 	var["ttl"] = "1d";
 	var["refresh"] = "4h";
 	var["retry"] = "1h";
