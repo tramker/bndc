@@ -1,4 +1,4 @@
-# master template for bndc
+# config template for bndc
 # !var=something - set variable !var to "something"
 # !CMD(domain.com) - run command !CMD with argument "domain.com"
 # system sets variables !zone, !zonefile, !host

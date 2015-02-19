@@ -6,12 +6,12 @@ static import globals;
 
 Zone currentZone;
 
-/* musi by scope, aby se spoustel destructor */
+/* must be scope to enforce that destructor is run */
 scope final class Zone
 {
   private:
-	static shared bool[string]	_instantiated; // existuje jiz tato zona ?
-	string		_name;		// domena
+	static bool[string] _instantiated; // does the zone already exist ?
+	string		_name;		// domain
 	string		_tplfil;	// tpl filename
 	string		_verfil;	// version filename
 	string		_zonfil;	// zone filename
@@ -23,13 +23,13 @@ scope final class Zone
 	bool		_changed;	// has zone changed ?
 
   public:
-	string ipnetwork;		// pouziva cmdPTR
+	string ipnetwork;		// uses cmdPTR
 	bool forced = false; 	// is zone forced (updated even if unchanged) ?
 
 	this(string zonstr, string file = null)
 	{
 		if (zonstr !in _instantiated)
-			synchronized _instantiated[zonstr] = true;
+			_instantiated[zonstr] = true; // pro multithread pouzit rwmutex na AA plus shared bool. Shared AA ne(staci).
 		else
 			assert(0, "Zone " ~ zonstr ~ " already instantiated");
 
@@ -55,7 +55,7 @@ scope final class Zone
 	~this()
 	{
 		writeSerial();
-		var.zone = null; // dulezite pro vars.get|put a jinde
+		var.zone = null; // important for vars.get|put and elsewhere
 		currentZone = null;
 		synchronized _instantiated.remove(_name);
 	}

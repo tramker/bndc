@@ -17,7 +17,7 @@ into the generated zone file without change.
 
 - reverse zones are generated from A records (not limited to a single forward
 zone) and you can customize them with !PTR commands and PTR records and whatever
-other records you wish. This is handy for IP's with multiple hostnames.
+other records you wish. This is handy for IPs with multiple hostnames.
 
 - you can use user defined variables to insert arbitrary data into your
 zones.
@@ -37,7 +37,7 @@ backend).
 Run 'kompiluj' script to compile bndc (it's too simple, I know).
 
 You can also use binary release, available on github, if you don't want to
-mess with D compiler.
+mess with the D compiler.
 
 Installing
 ----------
@@ -45,7 +45,9 @@ Installing
 Copy bndc binary to /usr/local/bin or any other path of your choice.
 
 Create directory for bndc data (you can use /etc/bind or similar). Create
-config.tpl and your zone templates (see the example directory).
+config.tpl and your zone templates (see the example directory). BNDC uses
+current directory for reading and writing its data by default, but it's
+recommended to use separate directory for templates and for generated zones.
 
 Using BNDC
 ----------
@@ -59,7 +61,7 @@ any template file).
 
 If you run bndc from the example directory, first it's going to read the
 file config.tpl (you can change this with --config option).  It process the
-file sequentialy, first setting various variables and then executing
+file sequentially, first setting various variables and then executing
 commands (!DOMAIN and !REVERSE).
 
 Each domain requires it's own template. They are stored in the template

@@ -1,11 +1,11 @@
 Poznamky k modulum programu
 ---------------------------
 
-vars - gloablni asociativni pole var, kde klic je nazev promenne (!var) z
+vars - globalni asociativni pole var, kde klic je nazev promenne (!var) z
 sablon. Promenne se ukladaji samostatne pro kazdou zonu. Neexistujici
 promenna vrati prazdny retezec.
 
-cmds - globalni asociativni pole cmd, kde klic je nezev prikazu a hodnota je
+cmds - globalni asociativni pole cmd, kde klic je nazev prikazu a hodnota je
 callback delegat, ktery se vola z parseru.
 
 eparser - parser, vstup a vystup pomoci struktury Element. Pred pouzitim
