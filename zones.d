@@ -19,7 +19,7 @@ scope final class Zone
 	uint		_sn_old;	// old S/N
 	SysTime		_veracc;	// old version filename accessTime
 	SysTime		_vermod;	// old version filename modificationTime
-	bool		_revertVer;	// revert to old S/N on writing
+	bool		_revertVerTS; // revert timestamp of version file on writing
 	bool		_changed;	// has zone changed ?
 
   public:
@@ -57,7 +57,7 @@ scope final class Zone
 		writeSerial();
 		var.zone = null; // important for vars.get|put and elsewhere
 		currentZone = null;
-		synchronized _instantiated.remove(_name);
+		_instantiated.remove(_name);
 	}
 
   public:
@@ -71,6 +71,12 @@ scope final class Zone
 	bool tplChanged()
 	{
 		return _changed = timeLastModified(_tplfil) > timeLastModified(_verfil, SysTime.min);
+	}
+
+	/* return true if zone file needs to be regenerated */
+	bool dbStale()
+	{
+		return timeLastModified(_tplfil) > timeLastModified(_zonfil, SysTime.min);
 	}
 
 	/* read serial number from file */
@@ -102,7 +108,7 @@ scope final class Zone
 		string ver = to!string(_sn);
 		try {
 			std.file.write(_verfil, ver);
-			if (_revertVer)
+			if (_revertVerTS)
 				setTimes(_verfil, _veracc, _vermod);
 		} catch (FileException e) { globals.errcount++; stderr.writeln("Error writing ", e.msg); }
 	}
@@ -122,8 +128,8 @@ scope final class Zone
 	}
 
 	/* revert time of version file to force rebuild, keep new S/N to stay in sync with zone file */
-	void revertVer()
+	void revertVerTS()
 	{
-		_revertVer = true;
+		_revertVerTS = true;
 	}
 }

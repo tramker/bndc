@@ -1,6 +1,8 @@
 BUGS:
-x je potreba i sledovat zmeny hlavniho configu - nelze, nacita se vzdy
-x kdyz neprojde zone check, je potreba vratit verzi na puvodni.
+x je potreba i sledovat zmeny hlavniho configu
+  -> nelze, nacita se vzdy
+x kdyz neprojde zone check, je potreba vratit verzi na puvodni
+  -> nevhodne kvuli synchronizaci se zonou, ale vracime timestamp verfil
 x prazdny header, footer
 x generovani reverzu pro vetsi nez /24 bloky
   - 10.0.0 ? - maska /20 v parametru !REVERSE ?
@@ -8,9 +10,10 @@ x generovani reverzu pro vetsi nez /24 bloky
 x reverz pro hosty s IP .0
 x mel by vratit varovani, kdyz v hlavnim configu neco zustane po zpracovani
 ? kdyz chybi enter za !NS - nevim uz o co slo
-- kdyz najde (starou) sablonu, ale ne .db, tak force regenerace
+x kdyz najde (starou) sablonu, ale ne .db, tak force regenerace
 - vice vars na jednom radku ?
 - scanzone se provadi vzdy pro vsechny forward zony (v soucasnosti nutne)
+- provadet reload jen kdyz se zmenilo S/N
 
 TODO:
 x commandline argument na manualni regeneraci (S/N zustava)
