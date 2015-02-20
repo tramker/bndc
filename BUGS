@@ -1,0 +1,20 @@
+BUGS:
+x je potreba i sledovat zmeny hlavniho configu - nelze, nacita se vzdy
+x kdyz neprojde zone check, je potreba vratit verzi na puvodni.
+x prazdny header, footer
+x generovani reverzu pro vetsi nez /24 bloky
+  - 10.0.0 ? - maska /20 v parametru !REVERSE ?
+  - 10.129.6.0/16 -> x.14.129.10.in-addr.arpa (ma byt 8.129.10)
+x reverz pro hosty s IP .0
+x mel by vratit varovani, kdyz v hlavnim configu neco zustane po zpracovani
+? kdyz chybi enter za !NS - nevim uz o co slo
+- kdyz najde (starou) sablonu, ale ne .db, tak force regenerace
+- vice vars na jednom radku ?
+- scanzone se provadi vzdy pro vsechny forward zony (v soucasnosti nutne)
+
+TODO:
+x commandline argument na manualni regeneraci (S/N zustava)
+x commandline argument na manualni regeneraci (S/N incrementuje)
+x chovani pri neznamem prikazu (nyni vlozi __CMD__)
+- podpora pro synchronizovane $GENERATE
+- jak zakazat parsovani promennych a prikazu (hlavne pro TXT "xyz !neco")
