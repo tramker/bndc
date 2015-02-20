@@ -25,9 +25,9 @@ body {
 	if (var["zone_suffix"].length < 3)
 		throw new Exception(__FUNCTION__ ~ "(): zone file suffix " ~ var["zone_suffix"] ~" not allowed)");
 
-	string[] extras;
+	string[] zoneopts;
 	if (args.length == 2)
-		extras = args[1..$];
+		zoneopts = args[1..$];
 	static if (KIND==Kind.FWD)		string zonestr = args[0];
 	else static if (KIND==Kind.REV) string zonestr = IPv4(args[0]).toReverseZone;
 	scope zone = new Zone(zonestr);
@@ -35,7 +35,7 @@ body {
 		zone.forced = true;			// force zone processing
 	static if (KIND==Kind.FWD)
 	{
-		addToNamedConf(zone.name, extras);
+		addToNamedConf(zone.name, zoneopts);
 		scope(success) { import scanzone; scanZone(hostdb, zone); } //z vysledneho souboru nacte hosty do db
 		if (zone.tplChanged)
 			zone.incSerial();
@@ -51,7 +51,7 @@ body {
 	{
 		zone.ipnetwork = args[0]; // pouziva cmdPTR
 		scope(exit) zone.ipnetwork = null; //melo by nastat automaticky u scope class
-		addToNamedConf(zone.name, extras);
+		addToNamedConf(zone.name, zoneopts);
 		auto chdb = hostdb.filterIPv4!(FilterOpt.CHANGED)(args[0]); //db changed only
 		//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.tplChanged, chdb.count);
 
@@ -178,12 +178,12 @@ int runReload()
 	return result.status;
 }
 
-void addToNamedConf(string zone, string[] extras=null)
+void addToNamedConf(string zone, string[] zoneopts=null)
 {
 	import std.string, std.path;
 	string content = "zone \"%s\" in {\n\ttype master;\n\tfile \"%s\";%s\n};\n";
 	string extra;
-	foreach (e; extras)
+	foreach (e; zoneopts)
 		extra ~= "\n\t" ~ e ~ ";";
 
 	namedcontent ~= format(content, zone, absolutePath(var["zonefile"]), extra);
