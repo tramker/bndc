@@ -101,7 +101,9 @@ body {
 	auto zf = File(zone.zonfil, "w");
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
 	zf.close;
-	runCheckZone();
+	if (runCheckZone)
+		zone.markForRebuild(); // check failed, do not increment S/N until template is modified
+	else
 	if (globals.errcount)
 		zone.revertVerTS(); //errors encountered, revert version file modify time to force rebuild next time
 	else

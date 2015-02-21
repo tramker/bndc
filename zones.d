@@ -132,4 +132,15 @@ scope final class Zone
 	{
 		_revertVerTS = true;
 	}
+
+	void markForRebuild()
+	{
+		import std.stdio;
+		SysTime tplacc,tplmod,newtime;
+		try {
+			getTimes(_tplfil, tplacc, tplmod);
+			newtime = tplmod - dur!"seconds"(1);
+			setTimes(_zonfil, newtime, newtime); // set time of zone file older than tpl file
+		} catch (FileException e) { globals.errcount++; stderr.writeln("Error: ", e.msg); }
+	}
 }
