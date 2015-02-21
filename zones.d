@@ -110,7 +110,7 @@ scope final class Zone
 			std.file.write(_verfil, ver);
 			if (_revertVerTS)
 				setTimes(_verfil, _veracc, _vermod);
-		} catch (FileException e) { globals.errcount++; stderr.writeln("Error writing ", e.msg); }
+		} catch (FileException e) { globals.errcount++; stderr.writeln("Error writing file ", e.msg); }
 	}
 
 	/* increment serial number */
@@ -141,6 +141,6 @@ scope final class Zone
 			getTimes(_tplfil, tplacc, tplmod);
 			newtime = tplmod - dur!"seconds"(1);
 			setTimes(_zonfil, newtime, newtime); // set time of zone file older than tpl file
-		} catch (FileException e) { globals.errcount++; stderr.writeln("Error: ", e.msg); }
+		} catch (FileException e) { globals.errcount++; stderr.writeln("Error accessing file ", e.msg); }
 	}
 }

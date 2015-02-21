@@ -75,14 +75,14 @@ body {
 	if (var["header"].length)
 		try {
 			hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
-		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); globals.errcount++; zone.revertVerTS; return null; }
+		} catch (FileException e) { stderr.writeln("Error reading file ", e.msg); globals.errcount++; zone.revertVerTS; return null; }
 	auto phdr = parser.parse(Element(Element.Type.FILE, hdr)).data;
 
 	string ftr;
 	if (var["footer"].length)
 		try {
 			ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
-		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); globals.errcount++; zone.revertVerTS; return null; }
+		} catch (FileException e) { stderr.writeln("Error reading file ", e.msg); globals.errcount++; zone.revertVerTS; return null; }
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
 	static if (KIND==Kind.REV)
