@@ -38,13 +38,13 @@ body {
 		addToNamedConf(zone.name, zoneopts);
 		scope(success) { import scanzone; scanZone(hostdb, zone); } //z vysledneho souboru nacte hosty do db
 		if (zone.tplChanged)
-			zone.incSerial();
+			zone.incSerial;
 		else
 		{
 			if (!zone.forced) 							// tpl file not changed and zone not forced
 				return null;
 			else if ("force-serial" in globals.opts)
-					zone.incSerial();
+					zone.incSerial;
 		}
 	} else
 	static if (KIND==Kind.REV)
@@ -56,13 +56,13 @@ body {
 		//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.tplChanged, chdb.count);
 
 		if (zone.tplChanged || chdb.count)				// tpl or db changed
-			zone.incSerial();
+			zone.incSerial;
 		else
 		{
 			if (!zone.forced)							// not changed and not forced
 				return null;
 			else if ("force-serial" in globals.opts)	// not changed and forced
-					zone.incSerial();
+					zone.incSerial;
 		}
 	}
 
@@ -75,14 +75,14 @@ body {
 	if (var["header"].length)
 		try {
 			hdr = cast(string) read(var["template_dir"] ~ "/" ~ var["header"], globals.MAXSIZE);
-		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); globals.errcount++; zone.revertVerTS(); return null; }
+		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); globals.errcount++; zone.revertVerTS; return null; }
 	auto phdr = parser.parse(Element(Element.Type.FILE, hdr)).data;
 
 	string ftr;
 	if (var["footer"].length)
 		try {
 			ftr = cast(string) read(var["template_dir"] ~ "/" ~ var["footer"], globals.MAXSIZE);
-		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); globals.errcount++; zone.revertVerTS(); return null; }
+		} catch (FileException e) { stderr.writeln("Error reading ", e.msg); globals.errcount++; zone.revertVerTS; return null; }
 	auto pftr = parser.parse(Element(Element.Type.FILE, ftr)).data;
 
 	static if (KIND==Kind.REV)
@@ -102,10 +102,10 @@ body {
 	zf.write(phdr ~ "\n" ~ pbdy ~ "\n" ~ pftr);
 	zf.close;
 	if (runCheckZone)
-		zone.markForRebuild(); // check failed, do not increment S/N until template is modified
+		zone.markForRebuild; // check failed, do not increment S/N until template is modified
 	else
 	if (globals.errcount)
-		zone.revertVerTS(); //errors encountered, revert version file modify time to force rebuild next time
+		zone.revertVerTS; //errors encountered, revert version file modify time to force rebuild next time
 	else
 		globals.changecount++;
 
