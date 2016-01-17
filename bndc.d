@@ -1,4 +1,4 @@
-import std.stdio, std.file, std.functional, std.c.stdlib;
+import std.stdio, std.file, std.functional, core.stdc.stdlib;
 import vars, cmds, eparser, gen;
 static import globals;
 
