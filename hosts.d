@@ -1,5 +1,6 @@
 module hosts;
 import std.stdio, std.string, std.container;
+import std.algorithm:filter;
 import vars;
 public import ipaddr;
 
@@ -125,33 +126,33 @@ enum FilterOpt { NONE, CHANGED }
 takze udelano vsechno jako UFCS. Idealne by melo vracet const, ale zatim neumime */
 auto filterHost(alias pred)(Hostdb db)
 {
-	return std.algorithm.filter!pred(db._host[]);
+	return filter!pred(db._host[]);
 }
 
 auto filterHost(FilterOpt OPT = FilterOpt.NONE)(Hostdb db, string arg)
 {
 	static if (OPT == FilterOpt.CHANGED)
-		return std.algorithm.filter!(a => a.changed && a.hn[arg.length<$ ? $-arg.length : 0 .. $] == arg)(db._host[]);
+		return filter!(a => a.changed && a.hn[arg.length<$ ? $-arg.length : 0 .. $] == arg)(db._host[]);
 	else
-		return std.algorithm.filter!(a =>              a.hn[arg.length<$ ? $-arg.length : 0 .. $] == arg)(db._host[]);
+		return filter!(a =>              a.hn[arg.length<$ ? $-arg.length : 0 .. $] == arg)(db._host[]);
 }
 
 auto filterIPv4(alias pred)(Hostdb db)
 {
-	return std.algorithm.filter!pred(db._ipv4[]);
+	return filter!pred(db._ipv4[]);
 }
 
 auto filterIPv4(FilterOpt OPT = FilterOpt.NONE)(Hostdb db, string arg)
 {
 	static if (OPT == FilterOpt.CHANGED)
-		return std.algorithm.filter!(a => a.changed && a.ad.isin(IPv4(arg)))(db._ipv4[]);
+		return filter!(a => a.changed && a.ad.isin(IPv4(arg)))(db._ipv4[]);
 	else
-		return std.algorithm.filter!(a =>              a.ad.isin(IPv4(arg)))(db._ipv4[]);
+		return filter!(a =>              a.ad.isin(IPv4(arg)))(db._ipv4[]);
 }
 
 auto filterIPv6(alias pred)(Hostdb db)
 {
-	return std.algorithm.filter!pred(db._ipv6[]);
+	return filter!pred(db._ipv6[]);
 }
 
 /*auto filterIPv6(FilterOpt OPT = FilterOpt.NONE)(Hostdb db, string arg)
