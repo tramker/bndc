@@ -23,7 +23,7 @@ void scanZone(ref Hostdb db, Zone zone)
 	}
 }
 
-private:
+private: /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 string origin;
 string lastname;
@@ -67,18 +67,18 @@ $ORIGIN		testunit.cz.
 @       SOA bid.iline.cz. mk.krej.cz. (2014022100 4h 1h 30d 15m)
 @       NS  stroj
 @       MX  10 mail.iline.cz.
-			A	11.12.13.100
-stroj       A   11.12.13.10
-  15m IN	A	11.12.14.10 ; TTL ignored, stroj jiz ma nastavene TTL
-;stroj      A   11.12.13.11
- rrtype     A   11.12.13.11 ; ERROR, mezera nazacatku, takze to neni hostname !
+				A	11.12.13.100
+stroj			A   11.12.13.10
+	15m IN		A	11.12.14.10 ; TTL ignored, stroj jiz ma nastavene TTL
+;stroj			A   11.12.13.11
+	rrtype		A   11.12.13.11 ; ERROR, mezera nazacatku, takze to neni hostname !
 jedna 12h A 11.12.13.1
-dva.testunit.cz. 6h A   11.12.13.2
+dva.testunit.cz. 6h A 11.12.13.2
 @       A   192.168.254.136
 $ORIGIN test.testunit.cz.
 tri-3 A 150.16.0.10
 jedna		IN	A	11.12.13.1
-knedlik     IN  TXT  "toto  A  1.2.3.4"
+knedlik		IN	TXT  "toto  A  1.2.3.4"
 `;
 
 	auto file = File("scanzone_unittest.tmp.db", "w");

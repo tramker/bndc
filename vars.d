@@ -32,12 +32,12 @@ static this()
 
 struct Vars
 {
-  private:
+	private: /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 	string[string]			_global_vars;  /* global user-defined vars */
 	string[string][string]	_zone_vars;    /* per zone user-defined vars */
 	string					_zone;
-  public:
 
+	public:  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 	string opCall(string id) { return get(id); }
 	string opIndex(string id) { return get(id); }
 	void opIndexAssign(string arg, string id) { put(id, arg); }

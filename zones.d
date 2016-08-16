@@ -9,7 +9,7 @@ Zone currentZone;
 /* must be scope to enforce that destructor is run */
 scope final class Zone
 {
-  private:
+	private: /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 	static bool[string] _instantiated; // does the zone already exist ?
 	string		_name;		// domain
 	string		_tplfil;	// tpl filename
@@ -22,7 +22,7 @@ scope final class Zone
 	bool		_revertVerTS; // revert timestamp of version file on writing
 	bool		_changed;	// has zone changed ?
 
-  public:
+	public:  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 	string ipnetwork;		// uses cmdPTR
 	bool forced = false; 	// is zone forced (updated even if unchanged) ?
 
@@ -60,7 +60,6 @@ scope final class Zone
 		_instantiated.remove(_name);
 	}
 
-  public:
 	auto name() @property { return _name; }
 	auto tplfil() @property { return _tplfil; }
 	auto verfil() @property { return _verfil; }

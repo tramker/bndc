@@ -39,16 +39,15 @@ Hostdb hostdb;
 
 struct Hostdb
 {
- private:
- 	DList!Host		_host;
- 	DList!Addr4		_ipv4;
- 	DList!Addr6		_ipv6;
- 	Host[string]	ind_host;
- 	Addr4[IPv4]		ind_ipv4;
- 	Addr6[IPv6]		ind_ipv6;
+	private: /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+	DList!Host		_host;
+	DList!Addr4		_ipv4;
+	DList!Addr6		_ipv6;
+	Host[string]	ind_host;
+	Addr4[IPv4]		ind_ipv4;
+	Addr6[IPv6]		ind_ipv6;
 
- public:
-
+	public:  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 	void add4(string hostname, string addr, bool changed = true)
 	{
 		string domain;
@@ -75,12 +74,13 @@ struct Hostdb
 		ind_ipv4[ip].hns ~= ind_host[hn];
 		if (changed) ind_host[hn].changed = true; //nutne jen pro zmeny prirazenych ip adres
 		if (changed) ind_ipv4[ip].changed = true; //nutne jen pro zmeny prirazenych hostnames
-			
+
 /*		debug {
 			import std.stdio;
 			stderr.writefln("DEBUG add4: %s %s", ind_host[hn].hn, ind_ipv4[ip].ad );
 		}
-*/	}
+*/
+	}
 
 	void add6(string hostname, string addr, bool changed = true)
 	{
@@ -114,16 +114,15 @@ struct Hostdb
 //	DList!Addr4 getAddr4() { return _ipv4; }
 //	DList!Addr6 getAddr6() { return _ipv6; }
 
- 	const(Host)  opIndex(string hn) { return ind_host[hn]; }
- 	const(Addr4) opIndex(IPv4 ip)   { return ind_ipv4[ip]; }
- 	const(Addr6) opIndex(IPv6 ip)   { return ind_ipv6[ip]; }
+	const(Host)  opIndex(string hn) { return ind_host[hn]; }
+	const(Addr4) opIndex(IPv4 ip)   { return ind_ipv4[ip]; }
+	const(Addr6) opIndex(IPv6 ip)   { return ind_ipv6[ip]; }
 }
 
 enum FilterOpt { NONE, CHANGED }
 
 /* Filter funkce s predikatem (alias pred) nemuzou byt member (chyba no frame access),
-   takze udelano vsechno jako UFCS.
-   Idealne by melo vracet const, ale zatim neumime */
+takze udelano vsechno jako UFCS. Idealne by melo vracet const, ale zatim neumime */
 auto filterHost(alias pred)(Hostdb db)
 {
 	return std.algorithm.filter!pred(db._host[]);
@@ -162,4 +161,3 @@ auto filterIPv6(alias pred)(Hostdb db)
 	else
 		return std.algorithm.filter!(a =>              a.ad.isin(IPv6(arg)))(db._ipv6[]);
 }*/
-	

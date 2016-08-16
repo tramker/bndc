@@ -23,11 +23,11 @@ static this()
 
 struct Cmds
 {
-  private:
+	private: /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 	string delegate(string[] args)[string] _cmd; /* key je jmeno prikazu */
 
-  public:
-    /* vracena hodnota jde zpet do parseru */
+	public:  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+	/* vracena hodnota jde zpet do parseru */
 	string doCmd(string id, string[] args)
 	{
 		debug stderr.writefln("DEBUG doCmd(%d): %s %s", args.length, id, args);
