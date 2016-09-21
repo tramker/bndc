@@ -1,6 +1,6 @@
 module globals;
 
-enum VERSION = "v0.6.1";
+enum VERSION = "v0.6.2";
 enum MAXSIZE = 1024*1024*100;	// max file size to read
 
 string[string] opts;			// commandline parsed options
