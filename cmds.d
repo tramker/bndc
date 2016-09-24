@@ -45,15 +45,24 @@ struct Cmds
 	
 	auto opIndex(string id)
 	{
-		if (id !in _cmd)
-			return _cmd[id];
+		if (auto valp = id in _cmd)
+			return *valp;
 		else throw new Exception("Command " ~ id ~ " not defined");
 	}
 
 	void opIndexAssign(string delegate(string[]) dg, string id)
 	{
-		if (id in _cmd)
-			_cmd[id] = dg;
+		if (auto valp = id in _cmd)
+			*valp = dg;
 		else throw new Exception("Command " ~ id ~ " not defined");
 	}
+}
+
+unittest
+{
+	import std.exception;
+	auto c = cmd["MX"];
+	cmd["MX"] = c;
+	assert(cmd._cmd["TTL"] == cmd["TTL"]);
+	assertThrown!Exception(cmd["NONEEXISTENT"]);
 }
