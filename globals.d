@@ -8,4 +8,4 @@ string[] forcedzones;			// zones to process even if unchanged
 int errcount;					// error counter (incremented during zone generation)
 int changecount;				// change counter (incremented during zone generation)
 
-static assert (__VERSION__ >= 2065, "Please upgrade your compiler");
+static assert(__VERSION__ >= 2065, "Please upgrade your compiler");
