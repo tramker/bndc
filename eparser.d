@@ -15,7 +15,7 @@ auto RE_CMT    = regex(r"#.*");
 //auto RE_VARSET = regex(r"(?<!![A-Z_]+\(.*\).*)!(\w+)\s*=\s*([\w!.-]+|`.+`|" ~ `".*")[ \t]*`,"i");
 auto RE_VARSET = regex(r"(?<!!\w+.*)!(\w+)\s*=\s*([\w!.-]+|`.+`|" ~ `".*")[ \t]*`,"i");
 auto RE_VARID  = regex(r"!(\w+)(?![(=])\b");
-auto RE_CMD    = regex(r"!([A-Z_]+)\(([A-Za-z0-9_ .:;!,@{}/*-]*)\)"); //pomlcka musi byt na konci
+auto RE_CMD    = regex(r"!([A-Z_]+)\(([A-Za-z0-9_ .:;!,@{}/*-]*)\)"); //dash MUST be last
 auto RE_SHELL  = regex(r"`(.+)`", "i");
 auto RE_DQT    = regex(`"(.*)"`);
 auto RE_WSLN   = regex(r"^\s+$");
@@ -48,18 +48,18 @@ class EParser
 			data = data.replaceFirst(m.hit, onVar(m[1]));
 	}
 	public:  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-	/* vraci typ ERR pri chybe a nezpracovana data */
+	/* return type ERR on error and unprocessed data */
 	final Element parse(const Element e)
 	{
-		Element ret;   //zbyla data po odstraneni zparsovanych hodnot
-		Element nextE; //dalsi data pro rekurznivni parsovani
-		bool lineChanged = false; // zmenil se radek ? (pro mazani prazdnych radku)
+		Element ret;   //rest of data after removal of parsed values
+		Element nextE; //next data for recursive parsing
+		bool lineChanged = false; // has the line changed ? (to erease empty lines)
 
 		if (e.data.length >= uint.max)
 			throw new Exception("Element " ~ to!string(e.data[0..64]) ~ "... too large");
 
 		ret.data.reserve(e.data.length);
-		string data = e.data; //nezpracovana data
+		string data = e.data; //unprocessed data
 		do //while (data.length)
 		{
 //			debug stderr.writefln("DEBUG_vstup: %s, '%s'", e.type, e.data);
@@ -74,13 +74,13 @@ class EParser
 			{
 				ret.type = Element.Type.FILE;
 				auto f = data.findSplitAfter("\n");
-				if (f[0].length) //nalezen radek
+				if (f[0].length) //line found
 				{
 					nextE = Element(Element.Type.LINE, f[0]);
 					auto r = parse(nextE);
 					ret.data ~= r.data;
 					data = data[f[0].length..$];
-				} else //posledni radek
+				} else //last line
 				{
 					nextE = Element(Element.Type.LINE, data);
 					auto r = parse(nextE);
@@ -95,8 +95,8 @@ class EParser
 				{
 					//debug stderr.writeln("DEBUG RE_CMT: ", m.hit);
 					lineChanged = true;
-					data = data[0..m.pre.length] ~ m.post; //post je \n
-					/* smazani prazdnych radku (nadbytecne, pouze optimalizace) */
+					data = data[0..m.pre.length] ~ m.post; //post is \n
+					/* erease empty lines (redundant, only optimization) */
 					if (data == "\n" || data == "\r\n" || data == "\r")
 						data = null;
 				} else
@@ -106,10 +106,10 @@ class EParser
 					lineChanged = true;
 					auto varName = m[1]; auto varArg = m[2];
 					nextE = Element(Element.Type.VAR, varArg);
-					//replaceVars(nextE.data); //vyhodnoti promene v hodnote (nechceme)
+					//replaceVars(nextE.data); //evaluate vars in value (we don't want this)
 					auto r = parse(nextE);
 					string rdata = onSet(varName, r.data);
-					ret.data = ret.data ~ m.pre ~ rdata; /* m.post se zpracuje v dalsim kole */
+					ret.data = ret.data ~ m.pre ~ rdata; /* m.post will be processed in the next round */
 					data = data[m.pre.length+m.hit.length..$];
 				} else
 				if (auto m = matchFirst(data, RE_CMD))
@@ -117,25 +117,25 @@ class EParser
 					//debug stderr.writeln("DEBUG RE_CMD: ", m.hit);
 					lineChanged = true;
 					auto cmdName = m[1]; auto cmdArg = m[2];
-					replaceVars(cmdArg); //vyhodnoti promene v argumentu
-					/* nepouzito
+					replaceVars(cmdArg); //evaluate vars in the argument
+					/* unused
 					nextE = Element(Element.Type.CMD, cmdArg);
 					auto r = parse(nextE); */
 					string rdata = onCmd(cmdName, splitArg(cmdArg));
 					ret.data = ret.data ~ m.pre ~ rdata;       /* m.post zrusen */
 					data = data[m.pre.length+m.hit.length..$]; /* m.post.length zruseno */
-				} else // zadny match, konec smycky
+				} else // no match, end of loop
 				{
 					ret.data ~= data;
 					data.length = 0;
-					/* smazani radku, ktere obsahuji jen mezery (pokud ze zmenily) */
+					/* erease lines with spaces only (if they changed) */
 					if (lineChanged)
 						ret.data = replaceFirst(ret.data, RE_WSLN, "");
-					if (! ret.data.length) // zbytecne
+					if (! ret.data.length) // unnecessary
 						ret.data = null;
 				}
-				replaceVars(ret.data); //vlozeni promenych do vysledku - zpracovava opakovane cely radek
-			/* konec radku */
+				replaceVars(ret.data); //insert vars to result - processess repeatedly a whole line
+			/* end of line */
 			} else
 			if (e.type == Element.Type.VAR)
 			{
@@ -154,7 +154,7 @@ class EParser
 				} else { ret.data = data; }
 				data.length = 0;
 			} else
-			if (e.type == Element.Type.CMD) /* nepouzito */
+			if (e.type == Element.Type.CMD) /* unused */
 			{
 				ret = Element(Element.Type.NUL, null);
 				data.length = 0;
@@ -171,9 +171,9 @@ class EParser
 	} // Parse.parse()
 
 	/* Callbacks */
-	string delegate(string name) onVar;                /* pri pouziti promenne */
-	string delegate(string name, string arg) onSet;    /* pri nastaveni promene */
-	string delegate(string name, string[] args) onCmd; /* pri pouziti prikazu */
+	string delegate(string name) onVar;                /* on usage of variable */
+	string delegate(string name, string arg) onSet;    /* on setting of variable */
+	string delegate(string name, string[] args) onCmd; /* on usage of command */
 
 } // class Parse
 

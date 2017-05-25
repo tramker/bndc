@@ -110,7 +110,7 @@ struct Hostdb
 		return ret;
 	}
 
-/* nepouziva se, misto toho filter s pred=true */
+/* not used, replaced by filter with pred=true */
 //	DList!Host  getHost()  { return _host; }
 //	DList!Addr4 getAddr4() { return _ipv4; }
 //	DList!Addr6 getAddr6() { return _ipv6; }

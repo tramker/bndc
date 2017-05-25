@@ -36,7 +36,7 @@ body {
 	static if (KIND==Kind.FWD)
 	{
 		addToNamedConf(zone.name, zoneopts);
-		scope(success) { import scanzone; scanZone(hostdb, zone); } //z vysledneho souboru nacte hosty do db
+		scope(success) { import scanzone; scanZone(hostdb, zone); } //read hosts from generated file to db
 		if (zone.tplChanged)
 			zone.incSerial;
 		else
@@ -49,8 +49,8 @@ body {
 	} else
 	static if (KIND==Kind.REV)
 	{
-		zone.ipnetwork = args[0]; // pouziva cmdPTR
-		scope(exit) zone.ipnetwork = null; //melo by nastat automaticky u scope class
+		zone.ipnetwork = args[0]; // using cmdPTR
+		scope(exit) zone.ipnetwork = null; //should happen automatically for scope class
 		addToNamedConf(zone.name, zoneopts);
 		auto chdb = hostdb.filterIPv4!(FilterOpt.CHANGED)(args[0]); //db changed only
 		//debug stderr.writefln("   changed: file: %s, db: %s: ", zone.tplChanged, chdb.count);
@@ -130,7 +130,7 @@ string cmdPTR(string[] args)
 		assert(db.front.ad == IPv4(ipaddr));
 		auto oldhosts = db.front.hns;
 		db.front.hns.length = 0;
-		db.front.hns ~= new Host(hostname, true); //concat nutny, jinak overlapping arrays
+		db.front.hns ~= new Host(hostname, true); //concat necessary otherwise overlapping arrays
 		db.front.hns ~= oldhosts;
 	}
 	return null;
@@ -194,8 +194,8 @@ void addToNamedConf(string zone, string[] zoneopts=null)
 void writeNamedConf()
 {
 	string namedfil = parser.parse(Element(Element.Type.LINE, var["namedconf"])).data;
-	var["namedconf"] = namedfil; //zpatky ulozime zparsovane
-	
+	var["namedconf"] = namedfil; //store back parsed
+
 	if (namedfil.exists && namedfil.isFile)
 		rename(namedfil, namedfil ~ ".bak");
 	if (namedfil.exists && !namedfil.isFile)

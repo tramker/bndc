@@ -23,3 +23,29 @@ to nutne, aby se nacetly i data nezpracovana parserem. Zatim nacita pouze A
 zaznamy.
 
 zones - trida k ukladani pomocnych informaci k zone (nazvy souboru, S/N, apod).
+
+
+Source modules notes
+--------------------
+
+vars - global associative array "var" where key is a variable name (!var)
+from templates. Variables are unique for each zone. Nonexistent variable
+returns empty string.
+
+cmds - global associative array "cmd" where key is a command name and a
+value is a callback delegate, which is then called from eparser.
+
+eparser - simple parser, it uses struct Element for input and output. It's
+necessary to set array "cmd" and inSet, onVar onCmd delegates before usage.
+
+ipaddr - ip address including netmask and string conversion
+
+hosts - internal database of hosts and ip addresses "hostdb". Used mainly
+for reverse zone generation. It keeps a list of IP addresses associated with
+a given hostname and conversely. Each record has a changed flag. Module
+scanzone writes to hostdb.
+
+scanzone - it reads a generated zone file into hostdb. It's necessary to
+read even nongenerated records. At the moment it reads A records only.
+
+zones - class with additional zone data (filenames, S/N, etc)

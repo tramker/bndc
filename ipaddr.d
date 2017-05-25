@@ -1,7 +1,7 @@
 module ipaddr;
 import std.stdio, std.string, std.conv, std.algorithm;
 
-/* pocita pocet nulovych bitu zprava, vrati ale jako zleva */
+/* count number of bits set from right, but return like from left */
 @safe pure nothrow
 int bitcount (uint v)
 {
@@ -53,7 +53,7 @@ struct IPv4
 	uint netPart() { return addr & mask; }
 	uint hstPart() { return addr & !mask; }
 	
-	/* obraceny string (domena) pro pouziti v reverznich zonach */
+	/* reversed string (domain) for usage in reversed zones */
 	string toReverseZone()
 	{
 		char[] ret; ret.length = 30;

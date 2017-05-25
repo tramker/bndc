@@ -24,10 +24,10 @@ static this()
 struct Cmds
 {
 	private: /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-	string delegate(string[] args)[string] _cmd; /* key je jmeno prikazu */
+	string delegate(string[] args)[string] _cmd; /* key is command name */
 
 	public:  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-	/* vracena hodnota jde zpet do parseru */
+	/* returned value goes back to the parser */
 	string doCmd(string id, string[] args)
 	{
 		debug stderr.writefln("DEBUG doCmd(%d): %s %s", args.length, id, args);
@@ -37,7 +37,7 @@ struct Cmds
 		{
 			import zones; static import globals;
 			globals.errcount++;
-			if (currentZone !is null) // nejsme v config template
+			if (currentZone !is null) // we are not in the config template
 				stderr.writefln("Error in template %s: unknown command %s", currentZone.tplfil, id);
 			return "; bndc error: unknown command " ~ id;
 		}

@@ -76,9 +76,9 @@ void main(string[] args)
 	}
 
 	//stdout.write(namedconf);
-	/* Varovani, pokud po zparsovani konfigu zbyly neprazdne radky */
+	/* Warn, if there are some nonempty lines left after parsing */
 	import std.string, std.algorithm;
 	auto cfgOutput = r.data.splitLines.filter!(a => (stripLeft(a).length>0));
-	if (cfgOutput.count) //pocet vracenych radku
+	if (cfgOutput.count) //number of lines returned
 		stderr.writefln("Warning: unrecognized config file (%s) elements:\n%s", filename, cfgOutput.join("\n"));
 }

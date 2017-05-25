@@ -1,5 +1,5 @@
-/* nacte zonovy soubor a ulozi do databaze hosts a jejich ip adresy */
-/* jednoducha naivni implementace - melo vy se predelat na komplet parser dle RFC 1035 */
+/* read zone file a store hosts and their ip addresses to database */
+/* naive implementation - should be redone to RFC 1035 */
 module scanzone;
 import std.stdio, std.regex;
 import hosts, zones;

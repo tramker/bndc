@@ -22,8 +22,8 @@ static this()
 	var["negttl"] = "15m";
 	var["nsname"] = "localhost.";
 	var["maintname"] = "root.localhost.";
-	var["rrttl"] = "";   // pouzivaji prikazy !SOA,!NS,!MX,!A,!AAAA,!CNAME
-	var["origin"] = "@"; // pouzivaji prikazy !SOA,!NS,!MX
+	var["rrttl"] = "";   // used by commands !SOA,!NS,!MX,!A,!AAAA,!CNAME
+	var["origin"] = "@"; // used by commands !SOA,!NS,!MX
 	var["namedconf"] = "!zone_dir/bndc-zones.conf";
 	var["cmd_reload"] = "rndc reload";
 	var["cmd_checkzone"] = "/usr/sbin/named-checkzone -i local !zone !zonefile";
@@ -45,7 +45,7 @@ struct Vars
 	void zone(string z) @property { _zone = z; }
 	string zone() @property { return _zone; }
 	
-    /* vracena hodnota jde zpet do parseru */
+    /* returned value goes back to parser */
 	string get(string id) @property
 	{
 		//debug stderr.writefln("DEBUG get(): [%s] %s", _zone, id);
@@ -57,7 +57,7 @@ struct Vars
 			return id in _global_vars ? _global_vars[id] : "";
 	}
 
-    /* vracena hodnota jde zpet do parseru */
+    /* returned value goes back to parser */
 	string put(string id, string arg) @property
 	{
 		//debug stderr.writefln("DEBUG put(): [%s] %s %s", _zone, id, arg);
